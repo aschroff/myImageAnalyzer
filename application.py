@@ -7,40 +7,40 @@ Created on Tue Jul  2 20:46:04 2019
 
 from flask import Flask, render_template, url_for, flash, redirect
 from forms import RegistrationForm, LoginForm
-import mysql.connector
+from flask_sqlalchemy import SQLAlchemy
+from datetime import datetime
 
 application = Flask(__name__)
 application.config['SECRET_KEY'] = '5791628bb0b13ce0c676dfde280ba245'
+application.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:Welcome1@localhost/mvm'
 
-posts = [
-    {
-        'owner': 'AndiSchroff',
-        'title': 'video1.mpg',
-        'description': 'test video',
-        'date_posted': 'July 13, 2019'
-    },
-    {
-        'owner': 'AndiSchroff',
-        'title': 'video2.mpg',
-        'description': 'test video 2',
-        'date_posted': 'July 14, 2019'
-    }
-]
+db = SQLAlchemy(application)
 
-mydb = mysql.connector.connect(
-        host='localhost',
-        user='admin',
-        passwd='Welcome1',
-        auth_plugin='mysql_native_password')
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(20), unique=True, nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    image_file = db.Column(db.String(20), nullable=False, default='default.jpg')
+    password = db.Column(db.String(60), nullable=False)
+    posts = db.relationship('Post', backref='author', lazy=True)
 
-print(mydb)
+    def __repr__(self):
+        return f"User('{self.username}', '{self.email}', '{self.image_file}')"
 
-cursor = mydb.cursor()
 
-cursor.execute("SHOW DATABASES")
+class Post(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(100), nullable=False)
+    date_posted = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    description = db.Column(db.Text, nullable=False)
+    owner = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
-for db in cursor:
-    print(db)
+    def __repr__(self):
+        return f"Post('{self.title}', '{self.date_posted}')"
+
+
+
+
 
 @application.route("/")
 @application.route("/home")
