@@ -9,12 +9,29 @@ from flask import Flask, render_template, url_for, flash, redirect
 from forms import RegistrationForm, LoginForm
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
+from dbconfig import databaseURI
 
 application = Flask(__name__)
 application.config['SECRET_KEY'] = '5791628bb0b13ce0c676dfde280ba245'
-application.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:Welcome1@localhost/mvm'
+application.config['SQLALCHEMY_DATABASE_URI'] = databaseURI
 
 db = SQLAlchemy(application)
+
+posts = [
+    {
+        'author': 'Corey Schafer',
+        'title': 'Blog Post 1',
+        'content': 'First post content',
+        'date_posted': 'April 20, 2018'
+    },
+    {
+        'author': 'Jane Doe',
+        'title': 'Blog Post 2',
+        'content': 'Second post content',
+        'date_posted': 'April 21, 2018'
+    }
+]
+
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -50,6 +67,12 @@ def home():
 
 @application.route("/about")
 def about():
+    db.drop_all()
+    db.create_all()
+    user1 = User(username='Andi', email='andreas@schroff-online.com', password='passwd')
+    db.session.add(user1)
+    db.session.commit()
+    
     return render_template('about.html', title='About')
 
 
