@@ -7,6 +7,7 @@ Created on Tue Jul  2 20:46:04 2019
 
 from flask import Flask, render_template, url_for, flash, redirect
 from forms import RegistrationForm, LoginForm
+import mysql.connector
 
 application = Flask(__name__)
 application.config['SECRET_KEY'] = '5791628bb0b13ce0c676dfde280ba245'
@@ -26,6 +27,20 @@ posts = [
     }
 ]
 
+mydb = mysql.connector.connect(
+        host='localhost',
+        user='admin',
+        passwd='Welcome1',
+        auth_plugin='mysql_native_password')
+
+print(mydb)
+
+cursor = mydb.cursor()
+
+cursor.execute("SHOW DATABASES")
+
+for db in cursor:
+    print(db)
 
 @application.route("/")
 @application.route("/home")
