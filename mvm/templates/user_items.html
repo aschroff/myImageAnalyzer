@@ -1,5 +1,6 @@
 {% extends "layout.html" %}
 {% block content %}
+<h1 class="mb-3">Items of {{ user.username }} ({{ items.total }})</h1>
     {% for item in items.items %}
         <article class="media content-section">
           <img class="rounded-circle article-img" src="{{ url_for('static', filename='images/profile_pics/' + item.owner.image_file) }}">
@@ -7,7 +8,7 @@
             <div class="article-metadata">
               <a class="mr-2" href="{{ url_for('item', item_id=item.id) }}">{{ item.itemname}}</a><br>
               <a class="mr-2" href="{{ url_for('user_items', username=item.owner.username) }}">{{ item.owner.username}}</a>
-              <a class="text-muted">{{ item.date_posted.strftime('%d-%m-%y') }}</a>
+              <small class="text-muted">{{ item.date_posted.strftime('%d-%m-%y') }}</small>
             </div>
           </div>
           <img class="rounded-circle account-img" src="{{ url_for('static', filename='images/thumbnails/' + item.thumbnail) }}">
@@ -16,9 +17,9 @@
     {% for page_num in items.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
         {% if page_num %}
             {% if items.page == page_num %}      
-                <a class="btn btn-info mb-4" href="{{ url_for('home', page=page_num)}}">{{ page_num }}</a>              
+                <a class="btn btn-info mb-4" href="{{ url_for('user_items', username=user.username, page=page_num)}}">{{ page_num }}</a>              
             {% else %}
-                <a class="btn btn-outline-info mb-4" href="{{ url_for('home', page=page_num)}}">{{ page_num }}</a>
+                <a class="btn btn-outline-info mb-4" href="{{ url_for('user_items', username=user.username, page=page_num)}}">{{ page_num }}</a>
             {% endif %}
         {% else %}
         ...

@@ -5,7 +5,7 @@
       <div class="media-body">
         <div class="article-metadata">
           <a class="mr-2">{{ item.itemname}}</a><br>
-          <small class="text-muted">{{ item.owner.username}}</small>
+          <small class="text-muted" href="{{ url_for('user_items', username=item.owner.username) }}">{{ item.owner.username}}</small>
           <small class="text-muted">{{ item.date_posted.strftime('%d-%m-%y') }}</small>
           {% if item.owner == current_user %}
               <div>

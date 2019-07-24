@@ -13,7 +13,8 @@ from mvm.models import User, Item
 @application.route("/")
 @application.route("/home")
 def home():
-    items = Item.query.order_by(Item.date_posted.desc()).all()
+    page = request.args.get('page', 1, type=int)
+    items = Item.query.order_by(Item.date_posted.desc()).paginate(page=page, per_page=4)
     return render_template('home.html', items=items)
 
 
@@ -171,3 +172,11 @@ def delete(item_id):
     db.session.commit()
     flash('Your item has been deleted', 'success')
     return redirect(url_for('home'))
+
+
+@application.route("/user/<string:username>")
+def user_items(username):
+    page = request.args.get('page', 1, type=int)
+    user = User.query.filter_by(username=username).first_or_404()
+    items = Item.query.filter_by(owner=user).order_by(Item.date_posted.desc()).paginate(page=page, per_page=4)
+    return render_template('user_items.html', items=items, user=user)
