@@ -2,11 +2,12 @@
 {% block content %}
     {% for item in items %}
         <article class="media content-section">
+          <img class="rounded-circle article-img" src="{{ url_for('static', filename='images/profile_pics/' + item.owner.image_file) }}">
           <div class="media-body">
             <div class="article-metadata">
-              <a class="mr-2">{{ item.itemname}}</a>
-              <a class="mr-2">{{ item.owner.username}}</a>
-              <small class="text-muted">{{ item.date_posted }}</small>
+              <a class="mr-2" href="{{ url_for('item', item_id=item.id) }}">{{ item.itemname}}</a><br>
+              <small class="text-muted">{{ item.owner.username}}</small>
+              <small class="text-muted">{{ item.date_posted.strftime('%d-%m-%y') }}</small>
             </div>
           </div>
           <img class="rounded-circle account-img" src="{{ url_for('static', filename='images/thumbnails/' + item.thumbnail) }}">

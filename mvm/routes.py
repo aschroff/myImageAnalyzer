@@ -1,7 +1,7 @@
 import os
 import secrets
 from PIL import Image
-from flask import render_template, url_for, flash, redirect, request
+from flask import render_template, url_for, flash, redirect, request, abort
 from flask_login import login_user, current_user, logout_user, login_required
 from mvm import application, db, bcrypt
 from mvm.forms import RegistrationForm, LoginForm, UpdateAccountForm, CreateItemForm
@@ -9,28 +9,11 @@ from mvm.models import User, Item
 
 
 
-posts = [
-    {
-        'owner': 'AndiSchroff',
-        'title': 'video1.mpg',
-        'description': 'test video',
-        'date_posted': 'July 13, 2019'
-    },
-    {
-        'owner': 'AndiSchroff',
-        'title': 'video2.mpg',
-        'description': 'test video 2',
-        'date_posted': 'July 14, 2019'
-    }
-]
-
-
-
 
 @application.route("/")
 @application.route("/home")
 def home():
-    items = Item.query.all()
+    items = Item.query.order_by(Item.date_posted.desc()).all()
     return render_template('home.html', items=items)
 
 
@@ -130,7 +113,7 @@ def save_item(form_picture):
 
 @application.route("/item/new", methods=['GET', 'POST'])
 @login_required
-def item():
+def new_item():
     form = CreateItemForm()
     if form.validate_on_submit():  
         if form.item.data:
@@ -142,4 +125,49 @@ def item():
            db.session.commit()
            flash('Your new item has been created', 'success')
            return redirect(url_for('home'))
-    return render_template('create_item.html', title='New Item', form=form)
+    return render_template('create_item.html', title='New Item', form=form, legend='New Item')
+
+@application.route("/item/<int:item_id>")
+def item(item_id):
+    item = Item.query.get_or_404(item_id)
+    return render_template('item.html', title=item.itemname, item=item)   
+
+@application.route("/item/<int:item_id>/update", methods=['GET', 'POST'])
+@login_required
+def update_item(item_id):
+    item = Item.query.get_or_404(item_id)
+    print('a')
+    if item.owner != current_user:
+        abort(403)
+    form=CreateItemForm()
+    print('b')
+    if form.validate_on_submit():
+        print('c')
+        if form.item.data:
+           print('d')
+           item.item_file = save_item(form.item.data) 
+           item.thumbnail = save_thumbnail(form.item.data)           
+           item.itemname = form.itemname.data
+           db.session.commit()
+           flash('Your item has been updated', 'success')
+           return redirect(url_for('item', item_id=item.id))   
+        elif form.itemname.data != item.itemname:
+           item.itemname = form.itemname.data
+           db.session.commit()
+           flash('Your item has been updated1', 'success')
+           return redirect(url_for('item', item_id=item.id))  
+    elif request.method == 'GET':
+        form.itemname.data = item.itemname
+    return render_template('create_item.html', title="Update Item",
+                           form=form, legend='Update Item', item=item)  
+    
+@application.route("/item/<int:item_id>/delete", methods=['POST'])
+@login_required
+def delete(item_id):
+    item = Item.query.get_or_404(item_id)
+    if item.owner != current_user:
+        abort(403)
+    db.session.delete(item)
+    db.session.commit()
+    flash('Your item has been deleted', 'success')
+    return redirect(url_for('home'))
