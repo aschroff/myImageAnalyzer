@@ -58,3 +58,17 @@ class CreateItemForm(FlaskForm):
     item = FileField('Item', validators=[FileAllowed(['jpg', 'png'])])
     itemname = StringField('Name for item', validators=[DataRequired(), Length(min=1, max=20)])
     submit = SubmitField('Upload')
+    
+class RequestResetForm(FlaskForm):
+    email = StringField('Email', validators=[DataRequired(), Email()])  
+    submit = SubmitField('Update')
+
+    def validate_email(self, email):
+        user = User.query.filter_by(email=email.data).first()
+        if user is None:
+            raise ValidationError('There is no account with this email. PLease register first.')
+            
+class ResetPasswordForm(FlaskForm):
+        password = PasswordField('Password', validators=[DataRequired()])
+        confirm_password = PasswordField('Confirm Password', validators=[DataRequired(), EqualTo('password')])
+        submit = SubmitField('Reset Password')       
