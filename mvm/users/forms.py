@@ -3,7 +3,7 @@ from flask_wtf.file import FileField, FileAllowed
 from flask_login import current_user
 from wtforms import StringField, PasswordField, SubmitField, BooleanField
 from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError
-from mvm.models import User, Item
+from mvm.models import User
 
 
 class RegistrationForm(FlaskForm):
@@ -54,11 +54,7 @@ class UpdateAccountForm(FlaskForm):
             if user:
                 raise ValidationError('That email is taken. Please choose a different one.')
                 
-class CreateItemForm(FlaskForm):
-    item = FileField('Item', validators=[FileAllowed(['jpg', 'png'])])
-    itemname = StringField('Name for item', validators=[DataRequired(), Length(min=1, max=20)])
-    submit = SubmitField('Upload')
-    
+
 class RequestResetForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired(), Email()])  
     submit = SubmitField('Update')
