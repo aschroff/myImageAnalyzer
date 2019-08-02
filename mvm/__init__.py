@@ -1,16 +1,18 @@
 
-from flask import Flask
+from flask import Flask, request, current_app
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager
 from flask_mail import Mail
 from mvm.config import Config
+from flask_babel import Babel
 
 
 
 mail = Mail()
 db = SQLAlchemy()
 bcrypt = Bcrypt()
+babel = Babel()
 loginmanager = LoginManager()
 loginmanager.login_view ='users.login'
 loginmanager.login_message = 'info'
@@ -24,6 +26,7 @@ def create_app(config_class=Config):
     mail.init_app(application)
     db.init_app(application)
     bcrypt.init_app(application)
+    babel.init_app(application)
     loginmanager.init_app(application)
     
     from mvm.users.routes import users
@@ -37,3 +40,7 @@ def create_app(config_class=Config):
     application.register_blueprint(errors)
     
     return application
+
+@babel.localeselector
+def get_locale():
+    return request.accept_languages.best_match(current_app.config['LANGUAGES'].keys())

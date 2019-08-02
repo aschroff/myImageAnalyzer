@@ -1,6 +1,7 @@
 from flask import Blueprint
 from flask import render_template, url_for, flash, redirect, request, abort
 from flask_login import current_user, login_required
+from flask_babel import gettext
 from mvm import db
 from mvm.items.forms import CreateItemForm
 from mvm.models import User, Item
@@ -21,9 +22,9 @@ def new_item():
            item = Item(item_file = itemfile, itemname = form.itemname.data, thumbnail = thumbnailfile, owner = current_user)
            db.session.add(item)
            db.session.commit()
-           flash('Your new item has been created', 'success')
+           flash(gettext('Your new item has been created'), 'success')
            return redirect(url_for('main.home'))
-    return render_template('create_item.html', title='New Item', form=form, legend='New Item')
+    return render_template('create_item.html', title='New Item', form=form, legend=gettext('New Item'))
 
 @items.route("/item/<int:item_id>")
 def item(item_id):
@@ -47,17 +48,17 @@ def update_item(item_id):
            item.thumbnail = save_thumbnail(form.item.data)           
            item.itemname = form.itemname.data
            db.session.commit()
-           flash('Your item has been updated', 'success')
+           flash(gettext('Your item has been updated'), 'success')
            return redirect(url_for('items.item', item_id=item.id))   
         elif form.itemname.data != item.itemname:
            item.itemname = form.itemname.data
            db.session.commit()
-           flash('Your item has been updated1', 'success')
+           flash(gettext('Your item has been updated1'), 'success')
            return redirect(url_for('items.item', item_id=item.id))  
     elif request.method == 'GET':
         form.itemname.data = item.itemname
     return render_template('create_item.html', title="Update Item",
-                           form=form, legend='Update Item', item=item)  
+                           form=form, legend=gettext('Update Item'), item=item)  
     
 @items.route("/item/<int:item_id>/delete", methods=['POST'])
 @login_required
@@ -67,7 +68,7 @@ def delete(item_id):
         abort(403)
     db.session.delete(item)
     db.session.commit()
-    flash('Your item has been deleted', 'success')
+    flash(gettext('Your item has been deleted'), 'success')
     return redirect(url_for('main.home'))
 
 

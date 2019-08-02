@@ -9,3 +9,11 @@ class Config:
     MAIL_USE_SSL = True
     MAIL_USERNAME = 'support@schroffs.de'
     MAIL_PASSWORD = 'KSCole1894#'
+    BABEL_DEFAULT_LOCALE = 'en'
+    BABEL_DEFAULT_TIMEZONE = 'UTC'
+    LANGUAGES = {
+    'en': 'English',
+    'de': 'Deutsch'
+    }
+    
+

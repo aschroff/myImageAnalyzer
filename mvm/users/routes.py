@@ -5,6 +5,7 @@ from mvm import db, bcrypt
 from mvm.users.forms import RegistrationForm, LoginForm, UpdateAccountForm, RequestResetForm, ResetPasswordForm
 from mvm.models import User
 from mvm.users.utils import save_picture, send_reset_email
+from flask_babel import gettext
 
 
 
@@ -22,7 +23,7 @@ def register():
         user = User(username=form.username.data, email=form.email.data, password=hashedpassword)
         db.session.add(user)
         db.session.commit()
-        flash(f'Your account has been created! you are able to log in', 'success')
+        flash(gettext('Your account has been created! you are able to log in'), 'success')
         return redirect(url_for('users.login'))
     return render_template('register.html', title='Register', form=form)
 
@@ -39,7 +40,7 @@ def login():
             next_page = request.args.get('next')
             return redirect(next_page) if next_page else redirect(url_for('main.home'))
         else:       
-            flash('Login Unsuccessful. Please check email and password', 'danger')
+            flash(gettext('Login Unsuccessful. Please check email and password'), 'danger')
     return render_template('login.html', title='Login', form=form)
 
 @users.route("/logout")
@@ -60,18 +61,13 @@ def account():
         current_user.username = form.username.data
         current_user.email = form.email.data
         db.session.commit()
-        flash('Your account has been updated!', 'success')
+        flash(gettext('Your account has been updated!'), 'success')
         return redirect(url_for('users.account'))
     elif request.method == 'GET':
         form.username.data = current_user.username
         form.email.data = current_user.email
     imagefile = url_for('static', filename='images/profile_pics/' + current_user.image_file)
     return render_template('account.html', title='Account', imagefile=imagefile, form=form)
-
-
-
-
-
 
     
 
@@ -83,7 +79,7 @@ def reset_request():
     if form.validate_on_submit():
        user = User.query.filter_by(email=form.email.data).first()
        send_reset_email(user)
-       flash('An email has been sent with instructions to reset your password.', 'info')
+       flash(gettext('An email has been sent with instructions to reset your password.'), 'info')
        return redirect(url_for('users.login'))
     return render_template('reset_request.html', title='Reset Password', form=form)
 
@@ -93,7 +89,7 @@ def reset_token(token):
         return redirect(url_for('main.home'))
     user = User.verify_reset_token(token)
     if user is None:
-        flash('That is an invalid or expired token', "warning")
+        flash(gettext('That is an invalid or expired token'), "warning")
         return redirect(url_for('users.reset_request'))
     form=ResetPasswordForm()
     if form.validate_on_submit():

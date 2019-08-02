@@ -9,8 +9,8 @@
           <small class="text-muted">{{ item.date_posted.strftime('%d-%m-%y') }}</small>
           {% if item.owner == current_user %}
               <div>
-                  <a class="btn btn-secondary btn-sm mt-1 mb-1"  href="{{ url_for('items.update_item', item_id=item.id) }}">Update</a>
-                  <button type="Button" class="btn btn-danger btn-sm m1" data-toggle="modal" data-target="#deleteModal">Delete</button>
+                  <a class="btn btn-secondary btn-sm mt-1 mb-1"  href="{{ url_for('items.update_item', item_id=item.id) }}">{{ _('Update') }}</a>
+                  <button type="Button" class="btn btn-danger btn-sm m1" data-toggle="modal" data-target="#deleteModal">{{ _('Delete') }}</button>
               </div>
           {% endif %}
         </div>
@@ -18,19 +18,19 @@
       <img class="rounded-circle account-img" src="{{ url_for('static', filename='images/thumbnails/' + item.thumbnail) }}">
     </article>
     <!-- Modal -->
-    <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="Delete Item?" aria-hidden="true">
+    <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="{{ _('Delete Item?') }}" aria-hidden="true">
       <div class="modal-dialog" role="document">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title" id="deleteModalLabel">Modal title</h5>
+            <h5 class="modal-title" id="deleteModalLabel">{{ _('Eintrag löschen') }}</h5>
             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
               <span aria-hidden="true">&times;</span>
             </button>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ _('Cancel') }}</button>
             <form action="{{ url_for('items.delete', item_id=item.id) }}" method="POST">
-                <input class="btn btn-danger"type="submit" value="Delete">
+                <input class="btn btn-danger"type="submit" value="{{ _('Delete') }}">
             </form>
           </div>
         </div>
