@@ -4,7 +4,7 @@ from flask_login import current_user, login_required
 from flask_babel import gettext
 from mvm import db, rekognition
 from mvm.items.forms import CreateItemForm
-from mvm.models import User, Item, ItemKeyword
+from mvm.models import User, Item, ItemKeyword, Keyword
 from mvm.items.utils import save_item, save_thumbnail, get_image_from_file
 
 
@@ -27,12 +27,14 @@ def new_item():
            imgbytes = get_image_from_file(itemfile)
            rekres = rekognition.detect_labels(Image={'Bytes': imgbytes}, MinConfidence=50)
            for label in rekres['Labels']:
-               print(label['Name'])
-               print(item.id)
-               itemkeywordstring = str(label['Name'])
-               print(itemkeywordstring)
-               itemkeyword = ItemKeyword(keywordtextname = itemkeywordstring, itemin = item)
-               db.session.add(itemkeyword)
+                   itemkeywordstring = str(label['Name'])
+                   keyword = Keyword.query.filter_by(keywordtextname = itemkeywordstring).first()
+                   if keyword is None:
+                       keyword = Keyword(keywordtextname = itemkeywordstring)
+                       db.session.add(keyword)
+                   print(itemkeywordstring)
+                   itemkeyword = ItemKeyword(reference = keyword, itemin = item)
+                   db.session.add(itemkeyword)
            db.session.commit()
            flash(gettext('Your new item has been created'), 'success')
            return redirect(url_for('main.home'))

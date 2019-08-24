@@ -49,8 +49,16 @@ class Item(db.Model):
 
 class ItemKeyword(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    keywordtextname = db.Column(db.String(100), nullable=False)
     date_analysis = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     item_id = db.Column(db.Integer, db.ForeignKey('item.id'), nullable=False)
+    keyword_id = db.Column(db.Integer, db.ForeignKey('keyword.id'), nullable=False)
     def __repr__(self):
-        return f"ItemKeyword('{self.keywordtextname}','{self.date_analysis}')"
+        return f"ItemKeyword('{self.date_analysis}')"
+    
+class Keyword(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    keywordtextname = db.Column(db.String(100), nullable=False)
+    date_create = db.Column(db.DateTime, nullable=False, default=datetime.utcnow) 
+    itemkeywords = db.relationship('ItemKeyword', backref='reference', lazy=True)
+    def __repr__(self):
+        return f"Keyword('{self.keywordtextname}','{self.date_create}')"
