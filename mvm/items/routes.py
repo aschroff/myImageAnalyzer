@@ -2,13 +2,15 @@ from flask import Blueprint
 from flask import render_template, url_for, flash, redirect, request, abort
 from flask_login import current_user, login_required
 from flask_babel import gettext
-from mvm import db
+from mvm import db, rekognition
 from mvm.items.forms import CreateItemForm
-from mvm.models import User, Item
-from mvm.items.utils import save_item, save_thumbnail
+from mvm.models import User, Item, ItemKeyword
+from mvm.items.utils import save_item, save_thumbnail, get_image_from_file
 
 
 items = Blueprint('items', __name__)
+
+
 
 @items.route("/item/new", methods=['GET', 'POST'])
 @login_required
@@ -21,6 +23,16 @@ def new_item():
            print (itemfile, form.itemname.data, thumbnailfile, current_user)          
            item = Item(item_file = itemfile, itemname = form.itemname.data, thumbnail = thumbnailfile, owner = current_user)
            db.session.add(item)
+           db.session.commit()
+           imgbytes = get_image_from_file(itemfile)
+           rekres = rekognition.detect_labels(Image={'Bytes': imgbytes}, MinConfidence=50)
+           for label in rekres['Labels']:
+               print(label['Name'])
+               print(item.id)
+               itemkeywordstring = str(label['Name'])
+               print(itemkeywordstring)
+               itemkeyword = ItemKeyword(keywordtextname = itemkeywordstring, itemin = item)
+               db.session.add(itemkeyword)
            db.session.commit()
            flash(gettext('Your new item has been created'), 'success')
            return redirect(url_for('main.home'))

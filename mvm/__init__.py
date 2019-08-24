@@ -6,6 +6,7 @@ from flask_login import LoginManager
 from flask_mail import Mail
 from mvm.config import Config
 from flask_babel import Babel
+import boto3
 
 
 
@@ -16,6 +17,8 @@ babel = Babel()
 loginmanager = LoginManager()
 loginmanager.login_view ='users.login'
 loginmanager.login_message = 'info'
+
+rekognition = boto3.client('rekognition')
 
 
 

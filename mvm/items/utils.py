@@ -24,3 +24,7 @@ def save_item(form_picture):
     i.save(picturepath)
     return picturefilename
 
+def get_image_from_file(filename):
+    picturepath = os.path.join(current_app.root_path, 'static/images/items', filename)
+    with open(picturepath, 'rb') as imgfile:
+        return imgfile.read()

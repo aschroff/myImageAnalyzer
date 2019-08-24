@@ -8,7 +8,7 @@ class Config:
     MAIL_PORT = 465
     MAIL_USE_SSL = True
     MAIL_USERNAME = 'support@schroffs.de'
-    MAIL_PASSWORD = 'KSCole1894#'
+    MAIL_PASSWORD = 'KSCole1894##'
     BABEL_DEFAULT_LOCALE = 'en'
     BABEL_DEFAULT_TIMEZONE = 'UTC'
     LANGUAGES = {

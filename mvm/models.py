@@ -41,6 +41,16 @@ class Item(db.Model):
     thumbnail = db.Column(db.String(20), nullable=False, default='default.jpg')
     date_posted = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    itemkeywords = db.relationship('ItemKeyword', backref='itemin', lazy=True)
 
     def __repr__(self):
         return f"Item('{self.item_file}','{self.itemname}', '{self.thumbnail}','{self.date_posted}')"
+    
+
+class ItemKeyword(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    keywordtextname = db.Column(db.String(100), nullable=False)
+    date_analysis = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    item_id = db.Column(db.Integer, db.ForeignKey('item.id'), nullable=False)
+    def __repr__(self):
+        return f"ItemKeyword('{self.keywordtextname}','{self.date_analysis}')"
