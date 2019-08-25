@@ -41,7 +41,7 @@ class Item(db.Model):
     thumbnail = db.Column(db.String(20), nullable=False, default='default.jpg')
     date_posted = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    itemkeywords = db.relationship('ItemKeyword', backref='itemin', lazy=True)
+    itemkeywords = db.relationship('ItemKeyword', backref='itemin', lazy=True, cascade="delete")
 
     def __repr__(self):
         return f"Item('{self.item_file}','{self.itemname}', '{self.thumbnail}','{self.date_posted}')"

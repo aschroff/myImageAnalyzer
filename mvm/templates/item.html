@@ -14,8 +14,17 @@
               </div>
           {% endif %}
         </div>
+        <div class="col-md-6">
+            <p class='text-muted'>{{ _('Overview') }}
+              <ul class="list-group">
+                {% for itemkeyword in itemkeywords %}     
+                    <li class="list-group-item list-group-item-light">{{ itemkeyword.reference.keywordtextname }} </li>             
+                {% endfor %} 
+              </ul>
+            </p>
+        </div>
       </div>
-      <img class="rounded-circle account-img" src="{{ url_for('static', filename='images/thumbnails/' + item.thumbnail) }}">
+      <img class="rounded-circle account-img" src="{{ url_for('static', filename='images/thumbnails/' + item.thumbnail) }}"><br>
     </article>
     <!-- Modal -->
     <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="{{ _('Delete Item?') }}" aria-hidden="true">

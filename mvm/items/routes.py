@@ -25,7 +25,7 @@ def new_item():
            db.session.add(item)
            db.session.commit()
            imgbytes = get_image_from_file(itemfile)
-           rekres = rekognition.detect_labels(Image={'Bytes': imgbytes}, MinConfidence=50)
+           rekres = rekognition.detect_labels(Image={'Bytes': imgbytes}, MinConfidence=90)
            for label in rekres['Labels']:
                    itemkeywordstring = str(label['Name'])
                    keyword = Keyword.query.filter_by(keywordtextname = itemkeywordstring).first()
@@ -43,21 +43,18 @@ def new_item():
 @items.route("/item/<int:item_id>")
 def item(item_id):
     item = Item.query.get_or_404(item_id)
-    return render_template('item.html', title=item.itemname, item=item)   
+    itemkeywords = ItemKeyword.query.filter_by(itemin=item) 
+    return render_template('item.html', title=item.itemname, item=item, itemkeywords=itemkeywords)   
 
 @items.route("/item/<int:item_id>/update", methods=['GET', 'POST'])
 @login_required
 def update_item(item_id):
     item = Item.query.get_or_404(item_id)
-    print('a')
     if item.owner != current_user:
         abort(403)
     form=CreateItemForm()
-    print('b')
     if form.validate_on_submit():
-        print('c')
         if form.item.data:
-           print('d')
            item.item_file = save_item(form.item.data) 
            item.thumbnail = save_thumbnail(form.item.data)           
            item.itemname = form.itemname.data
@@ -80,7 +77,9 @@ def delete(item_id):
     item = Item.query.get_or_404(item_id)
     if item.owner != current_user:
         abort(403)
+    print(ItemKeyword.query.filter_by(itemin=item).all())
     db.session.delete(item)
+    
     db.session.commit()
     flash(gettext('Your item has been deleted'), 'success')
     return redirect(url_for('main.home'))
