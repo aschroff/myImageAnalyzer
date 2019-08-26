@@ -36,15 +36,17 @@ def new_item():
                    itemkeyword = ItemKeyword(reference = keyword, itemin = item)
                    db.session.add(itemkeyword)
            db.session.commit()
-           flash(gettext('Your new item has been created'), 'success')
-           return redirect(url_for('main.home'))
-    return render_template('create_item.html', title='New Item', form=form, legend=gettext('New Item'))
+           flash(gettext('Your new item has been created'), 'success') 
+           return redirect(url_for('main.home'))  
+    itemsall = Item.query.order_by(Item.date_posted.desc())   
+    return render_template('create_item.html', title='New Item', form=form, legend=gettext('New Item'), itemsall=itemsall)
 
 @items.route("/item/<int:item_id>")
 def item(item_id):
     item = Item.query.get_or_404(item_id)
     itemkeywords = ItemKeyword.query.filter_by(itemin=item) 
-    return render_template('item.html', title=item.itemname, item=item, itemkeywords=itemkeywords)   
+    itemsall = Item.query.order_by(Item.date_posted.desc())
+    return render_template('item.html', title=item.itemname, item=item, itemkeywords=itemkeywords, itemsall=itemsall)   
 
 @items.route("/item/<int:item_id>/update", methods=['GET', 'POST'])
 @login_required
@@ -68,8 +70,9 @@ def update_item(item_id):
            return redirect(url_for('items.item', item_id=item.id))  
     elif request.method == 'GET':
         form.itemname.data = item.itemname
+    itemsall = Item.query.order_by(Item.date_posted.desc())
     return render_template('create_item.html', title="Update Item",
-                           form=form, legend=gettext('Update Item'), item=item)  
+                           form=form, legend=gettext('Update Item'), item=item, itemsall=itemsall)  
     
 @items.route("/item/<int:item_id>/delete", methods=['POST'])
 @login_required
@@ -90,7 +93,8 @@ def user_items(username):
     page = request.args.get('page', 1, type=int)
     user = User.query.filter_by(username=username).first_or_404()
     items = Item.query.filter_by(owner=user).order_by(Item.date_posted.desc()).paginate(page=page, per_page=4)
-    return render_template('user_items.html', items=items, user=user)
+    itemsall = Item.query.order_by(Item.date_posted.desc())
+    return render_template('user_items.html', items=items, user=user, itemsall=itemsall)
 
 
     

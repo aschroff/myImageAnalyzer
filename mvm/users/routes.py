@@ -3,7 +3,7 @@ from flask import render_template, url_for, flash, redirect, request
 from flask_login import login_user, current_user, logout_user, login_required
 from mvm import db, bcrypt
 from mvm.users.forms import RegistrationForm, LoginForm, UpdateAccountForm, RequestResetForm, ResetPasswordForm
-from mvm.models import User
+from mvm.models import User, Item
 from mvm.users.utils import save_picture, send_reset_email
 from flask_babel import gettext
 
@@ -25,7 +25,8 @@ def register():
         db.session.commit()
         flash(gettext('Your account has been created! you are able to log in'), 'success')
         return redirect(url_for('users.login'))
-    return render_template('register.html', title='Register', form=form)
+    itemsall = Item.query.order_by(Item.date_posted.desc())
+    return render_template('register.html', title='Register', form=form, itemsall=itemsall)
 
 
 @users.route("/login", methods=['GET', 'POST'])
@@ -41,7 +42,8 @@ def login():
             return redirect(next_page) if next_page else redirect(url_for('main.home'))
         else:       
             flash(gettext('Login Unsuccessful. Please check email and password'), 'danger')
-    return render_template('login.html', title='Login', form=form)
+    itemsall = Item.query.order_by(Item.date_posted.desc())
+    return render_template('login.html', title='Login', form=form, itemsall=itemsall)
 
 @users.route("/logout")
 def logout():
@@ -67,7 +69,8 @@ def account():
         form.username.data = current_user.username
         form.email.data = current_user.email
     imagefile = url_for('static', filename='images/profile_pics/' + current_user.image_file)
-    return render_template('account.html', title='Account', imagefile=imagefile, form=form)
+    itemsall = Item.query.order_by(Item.date_posted.desc())
+    return render_template('account.html', title='Account', imagefile=imagefile, form=form, itemsall=itemsall)
 
     
 
@@ -81,7 +84,8 @@ def reset_request():
        send_reset_email(user)
        flash(gettext('An email has been sent with instructions to reset your password.'), 'info')
        return redirect(url_for('users.login'))
-    return render_template('reset_request.html', title='Reset Password', form=form)
+    itemsall = Item.query.order_by(Item.date_posted.desc())
+    return render_template('reset_request.html', title='Reset Password', form=form, itemsall=itemsall)
 
 @users.route("/reset_password/<token>", methods=['GET', 'POST'])
 def reset_token(token):
@@ -98,4 +102,5 @@ def reset_token(token):
         db.session.commit()
         flash(f'Your password has been updated! you are able to log in', 'success')
         return redirect(url_for('users.login'))
-    return render_template('reset_token.html', title='Reset Password', form=form)
+    itemsall = Item.query.order_by(Item.date_posted.desc())
+    return render_template('reset_token.html', title='Reset Password', form=form, itemsall=itemsall)

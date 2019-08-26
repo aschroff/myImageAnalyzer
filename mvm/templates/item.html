@@ -18,7 +18,7 @@
             <p class='text-muted'>{{ _('Overview') }}
               <ul class="list-group">
                 {% for itemkeyword in itemkeywords %}     
-                    <li class="list-group-item list-group-item-light">{{ itemkeyword.reference.keywordtextname }} </li>             
+                    <a class="list-group-item list-group-item-action" href="{{ url_for('analytics.keyword_items', keywordtextname=itemkeyword.reference.keywordtextname) }}">{{ itemkeyword.reference.keywordtextname }} </a>             
                 {% endfor %} 
               </ul>
             </p>

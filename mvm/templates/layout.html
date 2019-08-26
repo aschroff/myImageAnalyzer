@@ -28,6 +28,7 @@
             <div class="navbar-nav mr-auto">
               <a class="nav-item nav-link" href="{{ url_for('main.home') }}">{{ _('Home') }}</a>
               <a class="nav-item nav-link" href="{{ url_for('main.about') }}">{{ _('About') }}</a>
+              <a class="nav-item nav-link" href="{{ url_for('analytics.keywords') }}">{{ _('Keywords') }}</a>
             </div>
             <!-- Navbar Right Side -->
             <div class="navbar-nav">
@@ -63,10 +64,13 @@
             <h3>{{ _('Our Sidebar') }}</h3>
             <p class='text-muted'>{{ _('Overview') }}
               <ul class="list-group">
-                <li class="list-group-item list-group-item-light">{{ _('Latest Posts') }}</li>
-                <li class="list-group-item list-group-item-light">{{ _('Announcements') }}</li>
-                <li class="list-group-item list-group-item-light">{{ _('Calendars') }}</li>
-                <li class="list-group-item list-group-item-light">{{ _('Statistics') }}</li>
+                {% if itemsall.count() %}
+                    <a class="list-group-item list-group-item-light" href="{{ url_for('items.item', item_id=itemsall[0].id) }}">{{ _('Latest Posts') }}: {{ itemsall[0].itemname }}</a>
+                                       
+                {% else %}    
+                    <a class="list-group-item list-group-item-light disabled">{{ _('Latest Posts') }}</a>
+                {% endif %}              
+                <a class="list-group-item list-group-item-light" href="{{ url_for('main.home') }}">{{ _('Statistics') }}: {{ itemsall.count() }} {{ _('items') }}</a>
               </ul>
             </p>
           </div>

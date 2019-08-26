@@ -36,11 +36,13 @@ def create_app(config_class=Config):
     from mvm.items.routes import items
     from mvm.main.routes import main 
     from mvm.errors.handlers import errors
+    from mvm.analytics.routes import analytics
     
     application.register_blueprint(users)
     application.register_blueprint(items)
     application.register_blueprint(main)
     application.register_blueprint(errors)
+    application.register_blueprint(analytics)
     
     return application
 
