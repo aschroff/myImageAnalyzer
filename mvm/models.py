@@ -53,7 +53,7 @@ class ItemKeyword(db.Model):
     item_id = db.Column(db.Integer, db.ForeignKey('item.id'), nullable=False)
     keyword_id = db.Column(db.Integer, db.ForeignKey('keyword.id'), nullable=False)
     def __repr__(self):
-        return f"ItemKeyword('{self.date_analysis}')"
+        return f"ItemKeyword('{self.date_analysis, self.item_id, self.keyword_id}')"
     
 class Keyword(db.Model):
     id = db.Column(db.Integer, primary_key=True)
