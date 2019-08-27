@@ -40,6 +40,12 @@ class Item(db.Model):
     itemname = db.Column(db.String(100), nullable=False)
     thumbnail = db.Column(db.String(20), nullable=False, default='default.jpg')
     date_posted = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    analysis_keywords = db.Column(db.Boolean, nullable=False, default=False)
+    analysis_persons = db.Column(db.Boolean, nullable=False, default=False)
+    analysis_celebs = db.Column(db.Boolean, nullable=False, default=False)
+    analysis_text = db.Column(db.Boolean, nullable=False, default=False)
+    analysis_labels = db.Column(db.Boolean, nullable=False, default=False)
+    analysis_keywords_theshold = db.Column(db.Integer, default=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     itemkeywords = db.relationship('ItemKeyword', backref='itemin', lazy=True, cascade="delete")
 

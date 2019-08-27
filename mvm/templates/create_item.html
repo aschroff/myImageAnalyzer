@@ -6,10 +6,10 @@
         <fieldset class="form-group">
             <legend class="border-bottom mb-4">{{ legend }}</legend>
             <div class="form-group">
-                {{ form.item.label() }}
-                {{ form.item(class="form-control-file") }}
-                {% if form.item.errors %}
-                    {% for error in form.item.errors %}
+                {{ form.item_file.label() }}
+                {{ form.item_file(class="form-control-file") }}
+                {% if form.item_file.errors %}
+                    {% for error in form.item_file.errors %}
                         <span class="text-danger">{{ error }}</span></br>                        
                     {% endfor %}
                 {% endif %}
@@ -27,10 +27,99 @@
                     {{ form.itemname(class="form-control form-control-lg") }}
                 {% endif %}
             </div>
+            <div class="form-group">
+                {{ form.analysis_keywords.label(class="form-control-label") }}
+                {% if form.analysis_keywords.errors %}
+                    {{ form.analysis_keywords(class="form-control form-control-lg is-invalid") }}
+                    <div class="invalid-feedback">
+                        {% for error in form.analysis_keywords.errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    {{ form.analysis_keywords(class="checkbox") }}
+                {% endif %}
+            </div>
+            <div class="form-group">
+                {{ form.analysis_persons.label(class="form-control-label") }}
+                {% if form.analysis_persons.errors %}
+                    {{ form.analysis_persons(class="form-control form-control-lg is-invalid") }}
+                    <div class="invalid-feedback">
+                        {% for error in form.analysis_persons.errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    {{ form.analysis_persons(class="checkbox") }}
+                {% endif %}
+            </div>
+            <div class="form-group">
+                {{ form.analysis_celebs.label(class="form-control-label") }}
+                {% if form.analysis_celebs.errors %}
+                    {{ form.analysis_celebs(class="form-control form-control-lg is-invalid") }}
+                    <div class="invalid-feedback">
+                        {% for error in form.analysis_celebs.errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    {{ form.analysis_celebs(class="checkbox") }}
+                {% endif %}
+            </div>            
+            <div class="form-group">
+                {{ form.analysis_text.label(class="form-control-label") }}
+                {% if form.analysis_text.errors %}
+                    {{ form.analysis_text(class="form-control form-control-lg is-invalid") }}
+                    <div class="invalid-feedback">
+                        {% for error in form.analysis_text.errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    {{ form.analysis_text(class="checkbox") }}
+                {% endif %}
+            </div> 
+            <div class="form-group">
+                {{ form.analysis_labels.label(class="form-control-label") }}
+                {% if form.analysis_labels.errors %}
+                    {{ form.analysis_labels(class="form-control form-control-lg is-invalid") }}
+                    <div class="invalid-feedback">
+                        {% for error in form.analysis_labels.errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    {{ form.analysis_labels(class="checkbox") }}
+                {% endif %}
+            </div>    
+            <div class="form-group">
+                {{ form.analysis_keywords_theshold.label(class="form-control-label") }}
+                {% if form.analysis_keywords_theshold.errors %}
+                    {{ form.analysis_keywords_theshold(class="form-control form-control-lg is-invalid") }}
+                    <div class="invalid-feedback">
+                        {% for error in form.analysis_keywords_theshold.errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    {{ form.analysis_keywords_theshold(class="form-control form-control-lg") }}
+                {% endif %}
+            </div>                                 
         </fieldset>
         <div class="form-group">
             {{ form.submit(class="btn btn-outline-info") }}
         </div>
     </form>
+        {% if itemkeywords.count() > 0 %}
+              <div class="col-md-6">            
+                <p class='text-muted'>{{ _('Keywords') }}
+                  <ul class="list-group">
+                    {% for itemkeyword in itemkeywords %}     
+                        <a class="list-group-item list-group-item-action" href="{{ url_for('analytics.keyword_items', keywordtextname=itemkeyword.reference.keywordtextname) }}">{{ itemkeyword.reference.keywordtextname }} </a>             
+                    {% endfor %} 
+                  </ul>
+                </p>
+            </div>
+        {% endif %} 
 </div>
 {% endblock content %}
