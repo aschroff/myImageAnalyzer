@@ -25,7 +25,7 @@ def register():
         db.session.commit()
         flash(gettext('Your account has been created! you are able to log in'), 'success')
         return redirect(url_for('users.login'))
-    itemsall = Item.query.order_by(Item.date_posted.desc())
+    itemsall = Item.query.order_by(Item.date_posted.desc()).all()
     return render_template('register.html', title='Register', form=form, itemsall=itemsall)
 
 
@@ -42,7 +42,7 @@ def login():
             return redirect(next_page) if next_page else redirect(url_for('main.home'))
         else:       
             flash(gettext('Login Unsuccessful. Please check email and password'), 'danger')
-    itemsall = Item.query.order_by(Item.date_posted.desc())
+    itemsall = Item.query.order_by(Item.date_posted.desc()).all()
     return render_template('login.html', title='Login', form=form, itemsall=itemsall)
 
 @users.route("/logout")
@@ -69,7 +69,7 @@ def account():
         form.username.data = current_user.username
         form.email.data = current_user.email
     imagefile = url_for('static', filename='images/profile_pics/' + current_user.image_file)
-    itemsall = Item.query.order_by(Item.date_posted.desc())
+    itemsall = Item.query.order_by(Item.date_posted.desc()).all()
     return render_template('account.html', title='Account', imagefile=imagefile, form=form, itemsall=itemsall)
 
     
@@ -84,7 +84,7 @@ def reset_request():
        send_reset_email(user)
        flash(gettext('An email has been sent with instructions to reset your password.'), 'info')
        return redirect(url_for('users.login'))
-    itemsall = Item.query.order_by(Item.date_posted.desc())
+    itemsall = Item.query.order_by(Item.date_posted.desc()).all()
     return render_template('reset_request.html', title='Reset Password', form=form, itemsall=itemsall)
 
 @users.route("/reset_password/<token>", methods=['GET', 'POST'])
@@ -102,5 +102,5 @@ def reset_token(token):
         db.session.commit()
         flash(f'Your password has been updated! you are able to log in', 'success')
         return redirect(url_for('users.login'))
-    itemsall = Item.query.order_by(Item.date_posted.desc())
+    itemsall = Item.query.order_by(Item.date_posted.desc()).all()
     return render_template('reset_token.html', title='Reset Password', form=form, itemsall=itemsall)

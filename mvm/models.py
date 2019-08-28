@@ -48,7 +48,7 @@ class Item(db.Model):
     analysis_keywords_theshold = db.Column(db.Integer, default=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     itemkeywords = db.relationship('ItemKeyword', backref='itemin', lazy=True, cascade="delete")
-
+    persons = db.relationship('Person', backref='itemin', lazy=True, cascade="delete")
     def __repr__(self):
         return f"Item('{self.item_file}','{self.itemname}', '{self.thumbnail}','{self.date_posted}')"
     
@@ -56,8 +56,8 @@ class Item(db.Model):
 class ItemKeyword(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     date_analysis = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-    item_id = db.Column(db.Integer, db.ForeignKey('item.id'), nullable=False)
-    keyword_id = db.Column(db.Integer, db.ForeignKey('keyword.id'), nullable=False)
+    item_id = db.Column(db.Integer, db.ForeignKey('item.id', ondelete='CASCADE'), nullable=False)
+    keyword_id = db.Column(db.Integer, db.ForeignKey('keyword.id', ondelete='CASCADE'), nullable=False)
     def __repr__(self):
         return f"ItemKeyword('{self.date_analysis, self.item_id, self.keyword_id}')"
     
@@ -68,3 +68,33 @@ class Keyword(db.Model):
     itemkeywords = db.relationship('ItemKeyword', backref='reference', lazy=True)
     def __repr__(self):
         return f"Keyword('{self.keywordtextname}','{self.date_create}')"
+    
+class Person(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    date_analysis = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    item_id = db.Column(db.Integer, db.ForeignKey('item.id'), nullable=False)
+    personattributes = db.relationship('PersonAttribute', backref='referenceperson', lazy=True, cascade="all, delete-orphan")
+    BoundingBoxWidth = db.Column(db.Numeric(precision = 18, scale = 17), nullable=False, default = 1)
+    BoundingBoxHeight = db.Column(db.Numeric(precision = 18, scale = 17), nullable=False, default = 1)
+    BoundingBoxLeft = db.Column(db.Numeric(precision = 18, scale = 17), nullable=False, default = 0)
+    BoundingBoxTop = db.Column(db.Numeric(precision = 18, scale = 17), nullable=False, default = 0)
+    AgeLow = db.Column(db.Integer, nullable=False, default=0)
+    AgeHigh = db.Column(db.Integer, nullable=False, default=999)
+    def __repr__(self):
+        return f"Person('{self.date_analysis, self.item_id, self.attribute_id}')"  
+    
+class Attribute(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    attributetextname = db.Column(db.String(100), nullable=False)
+    date_create = db.Column(db.DateTime, nullable=False, default=datetime.utcnow) 
+    personattributes = db.relationship('PersonAttribute', backref='referenceattribute', lazy=True)
+    def __repr__(self):
+        return f"Attribute('{self.attributetextname}','{self.date_create}')"
+    
+class PersonAttribute(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    date_analysis = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    person_id = db.Column(db.Integer, db.ForeignKey('person.id', ondelete='CASCADE'), nullable=False)
+    attribute_id = db.Column(db.Integer, db.ForeignKey('attribute.id', ondelete='CASCADE'), nullable=False)
+    def __repr__(self):
+        return f"PersonAttribute('{self.date_analysis, self.person_id, self.attribute_id}')"    

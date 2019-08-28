@@ -17,7 +17,7 @@ def keywords():
     page = request.args.get('page', 1, type=int)
     keywordstest = db.session.query(func.count(ItemKeyword.item_id).label('countitems'), Keyword.id, Keyword.keywordtextname).group_by(ItemKeyword.keyword_id).join(Keyword)
     k = keywordstest.paginate(page=page, per_page=10)
-    itemsall = Item.query.order_by(Item.date_posted.desc())
+    itemsall = Item.query.order_by(Item.date_posted.desc()).all()
     return render_template('keywords.html', keywords=k, itemsall=itemsall)  
 
 
@@ -26,7 +26,7 @@ def keyword_items(keywordtextname):
     page = request.args.get('page', 1, type=int)
     keyword = Keyword.query.filter_by(keywordtextname=keywordtextname).first_or_404()    
     item_keywords = ItemKeyword.query.filter_by(reference=keyword).order_by(ItemKeyword.date_analysis.desc()).paginate(page=page, per_page=4)
-    itemsall = Item.query.order_by(Item.date_posted.desc())
+    itemsall = Item.query.order_by(Item.date_posted.desc()).all()
     return render_template('keyword_items.html', item_keywords=item_keywords, keyword=keyword, itemsall=itemsall)
 
 

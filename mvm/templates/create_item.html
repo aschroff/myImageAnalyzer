@@ -110,7 +110,8 @@
             {{ form.submit(class="btn btn-outline-info") }}
         </div>
     </form>
-        {% if itemkeywords.count() > 0 %}
+    {% if itemkeywords is defined %}
+        {% if itemkeywords | count > 0 %}
               <div class="col-md-6">            
                 <p class='text-muted'>{{ _('Keywords') }}
                   <ul class="list-group">
@@ -121,5 +122,6 @@
                 </p>
             </div>
         {% endif %} 
+    {% endif %} 
 </div>
 {% endblock content %}
