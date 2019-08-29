@@ -28,15 +28,15 @@
         {% if persons.count() > 0 %}
             <div class="col-md-6">
                 <p class='text-muted'>{{ _('Persons') }}
-                {% set personnr = 1 %}
+                {% set personnr = namespace(nr=1) %}
                 {% for person in persons %}
-                     <p class='text-muted'>{{ _('Person') }} {{ personnr }}                    
+                     <p class='text-muted'>{{ _('Person') }} {{ personnr.nr }}                    
                      <ul class="list-group">                
                         {% for personattribute in personattributes[person.id] %}     
                             <a class="list-group-item list-group-item-action" >{{ personattribute.referenceattribute.attributetextname }} </a>             
                         {% endfor %}    
                      </ul>
-                     {% set personnr = personnr +1  %}
+                     {% set personnr.nr = personnr.nr + 1  %}
                 {% endfor %}                   
                 </p>
             </div>

@@ -81,7 +81,7 @@ class Person(db.Model):
     AgeLow = db.Column(db.Integer, nullable=False, default=0)
     AgeHigh = db.Column(db.Integer, nullable=False, default=999)
     def __repr__(self):
-        return f"Person('{self.date_analysis, self.item_id, self.attribute_id}')"  
+        return f"Person('{self.date_analysis, self.item_id}')"  
     
 class Attribute(db.Model):
     id = db.Column(db.Integer, primary_key=True)

@@ -1,0 +1,28 @@
+{% extends "layout.html" %}
+{% block content %}
+<h1 class="mb-3">Items for {{ attribute.attributetextname }} ({{ attributeitems.total }})</h1>
+    {% for itemattribute in attributeitems.items %}
+        <article class="media content-section">
+          <img class="rounded-circle article-img" src="{{ url_for('static', filename='images/profile_pics/' + itemattribute.owner.image_file) }}">
+          <div class="media-body">
+            <div class="article-metadata">
+              <a class="mr-2" href="{{ url_for('items.item', item_id=itemattribute.id) }}">{{ itemattribute.itemname}}</a><br>
+              <a class="mr-2" href="{{ url_for('items.user_items', username=itemattribute.owner.username) }}">{{ itemattribute.owner.username}}</a>
+              <small class="text-muted">{{ itemattribute.date_posted.strftime('%d-%m-%y') }}</small>
+            </div>
+          </div>
+          <img class="rounded-circle account-img" src="{{ url_for('static', filename='images/thumbnails/' + itemattribute.thumbnail) }}">
+        </article>
+    {% endfor %}
+    {% for page_num in attributeitems.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+        {% if page_num %}
+            {% if attributeitems.page == page_num %}      
+                <a class="btn btn-info mb-4" href="{{ url_for('analytics.attribute_items', attributetextname=attribute.attributetextname, page=page_num)}}">{{ page_num }}</a>              
+            {% else %}
+                <a class="btn btn-outline-info mb-4" href="{{ url_for('analytics.attribute_items', attributetextname=attribute.attributetextname, page=page_num)}}">{{ page_num }}</a>
+            {% endif %}
+        {% else %}
+        ...
+        {% endif %}
+    {% endfor %}        
+{% endblock content %}

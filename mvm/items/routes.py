@@ -10,89 +10,22 @@ from mvm.items.utils import save_item, save_thumbnail, get_image_from_file
 
 items = Blueprint('items', __name__)
 
-
-
-@items.route("/item/new", methods=['GET', 'POST'])
-@login_required
-def new_item():
-    form = CreateItemForm()
-    if form.validate_on_submit():  
-        if form.item_file.data:
-           itemfile = save_item(form.item_file.data) 
-           thumbnailfile = save_thumbnail(form.item_file.data)            
-           item = Item(item_file = itemfile, itemname = form.itemname.data, thumbnail = thumbnailfile,
-                       owner = current_user,  analysis_keywords=form.analysis_keywords.data, analysis_keywords_theshold = form.analysis_keywords_theshold.data)
-           db.session.add(item)
+def object_and_scene_detection(item):
+       if item.analysis_keywords:
+           imgbytes = get_image_from_file(item.item_file)
+           rekres = rekognition.detect_labels(Image={'Bytes': imgbytes}, MinConfidence=item.analysis_keywords_theshold)
+           for label in rekres['Labels']:
+                   itemkeywordstring = str(label['Name'])
+                   keyword = Keyword.query.filter_by(keywordtextname = itemkeywordstring).first()
+                   if keyword is None:
+                       keyword = Keyword(keywordtextname = itemkeywordstring)
+                       db.session.add(keyword)
+                   itemkeyword = ItemKeyword(reference = keyword, itemin = item)
+                   db.session.add(itemkeyword)
            db.session.commit()
-           if form.analysis_keywords.data:
-               imgbytes = get_image_from_file(itemfile)
-               rekres = rekognition.detect_labels(Image={'Bytes': imgbytes}, MinConfidence=item.analysis_keywords_theshold)
-               for label in rekres['Labels']:
-                       itemkeywordstring = str(label['Name'])
-                       keyword = Keyword.query.filter_by(keywordtextname = itemkeywordstring).first()
-                       if keyword is None:
-                           keyword = Keyword(keywordtextname = itemkeywordstring)
-                           db.session.add(keyword)
-                       itemkeyword = ItemKeyword(reference = keyword, itemin = item)
-                       db.session.add(itemkeyword)
-               db.session.commit()
-           flash(gettext('Your new item has been created'), 'success') 
-           return redirect(url_for('main.home'))  
-    itemsall = Item.query.order_by(Item.date_posted.desc()).all()  
-    form.analysis_keywords.data = True
-    form.analysis_keywords_theshold.data = 90
-    return render_template('create_item.html', title='New Item', form=form, legend=gettext('New Item'), itemsall=itemsall)
 
-@items.route("/item/<int:item_id>")
-def item(item_id):
-    item = Item.query.get_or_404(item_id)
-    itemkeywords = ItemKeyword.query.filter_by(itemin=item)
-    persons = Person.query.filter_by(itemin=item)
-    attributes = {}
-    for person in persons:
-        personattributes = PersonAttribute.query.filter_by(referenceperson=person).all()
-        attributes[person.id] = personattributes
-    print(attributes)     
-    itemsall = Item.query.order_by(Item.date_posted.desc()).all()
-    return render_template('item.html', title=item.itemname, item=item, itemkeywords=itemkeywords, itemsall=itemsall,
-                           persons = persons, personattributes = attributes)   
-
-@items.route("/item/<int:item_id>/update", methods=['GET', 'POST'])
-@login_required
-def update_item(item_id):
-    item = Item.query.get_or_404(item_id)
-    if item.owner != current_user:
-        abort(403)
-    form=CreateItemForm()
-    if form.validate_on_submit():
-        if form.item_file.data:
-           item.item_file = save_item(form.item_file.data) 
-           item.thumbnail = save_thumbnail(form.item_file.data)         
-        item.itemname = form.itemname.data           
-        item.analysis_keywords = form.analysis_keywords.data
-        item.analysis_persons = form.analysis_persons.data
-        item.analysis_celebs = form.analysis_celebs.data 
-        item.analysis_text = form.analysis_text.data
-        item.analysis_labels = form.analysis_labels.data
-        item.analysis_keywords_theshold = form.analysis_keywords_theshold.data
-        db.session.query(ItemKeyword).filter(ItemKeyword.item_id == item_id).delete()
-        db.session.query(Person).filter(Person.item_id == item_id).delete()
-        db.session.commit()
-        # Object and scene detection - Keywords
-        if form.analysis_keywords.data:
-               imgbytes = get_image_from_file(item.item_file)
-               rekres = rekognition.detect_labels(Image={'Bytes': imgbytes}, MinConfidence=item.analysis_keywords_theshold)
-               for label in rekres['Labels']:
-                       itemkeywordstring = str(label['Name'])
-                       keyword = Keyword.query.filter_by(keywordtextname = itemkeywordstring).first()
-                       if keyword is None:
-                           keyword = Keyword(keywordtextname = itemkeywordstring)
-                           db.session.add(keyword)
-                       itemkeyword = ItemKeyword(reference = keyword, itemin = item)
-                       db.session.add(itemkeyword)
-               db.session.commit()             
-        # Facial analysis - Persons
-        if form.analysis_persons.data:
+def facial_analysis(item):    
+           if item.analysis_persons:
                imgbytes = get_image_from_file(item.item_file)
                rekres = rekognition.detect_faces(Image={'Bytes': imgbytes},  Attributes=['ALL'])
                for personresult in rekres['FaceDetails']:
@@ -143,7 +76,74 @@ def update_item(item_id):
                                            db.session.add(attribute)                                           
                                        personattribute =  PersonAttribute(referenceperson = person, referenceattribute = attribute)  
                                        db.session.add(personattribute)
-                       db.session.commit()                 
+                       db.session.commit()  
+
+
+@items.route("/item/new", methods=['GET', 'POST'])
+@login_required
+def new_item():
+    form = CreateItemForm()
+    if form.validate_on_submit():  
+        if form.item_file.data:
+           itemfile = save_item(form.item_file.data) 
+           thumbnailfile = save_thumbnail(form.item_file.data)            
+           item = Item(item_file = itemfile, itemname = form.itemname.data, thumbnail = thumbnailfile,
+                       owner = current_user,  analysis_keywords=form.analysis_keywords.data, 
+                       analysis_persons = form.analysis_persons.data, analysis_celebs = form.analysis_celebs.data,
+                       analysis_text = form.analysis_text.data, analysis_labels = form.analysis_labels.data,
+                       analysis_keywords_theshold = form.analysis_keywords_theshold.data)
+           db.session.add(item)
+           db.session.commit()
+
+           object_and_scene_detection(item = item)
+           facial_analysis(item = item)
+
+           flash(gettext('Your new item has been created'), 'success') 
+           return redirect(url_for('main.home'))  
+    itemsall = Item.query.order_by(Item.date_posted.desc()).all()  
+    form.analysis_keywords.data = True
+    form.analysis_keywords_theshold.data = 90
+    return render_template('create_item.html', title='New Item', form=form, legend=gettext('New Item'), itemsall=itemsall)
+
+@items.route("/item/<int:item_id>")
+def item(item_id):
+    item = Item.query.get_or_404(item_id)
+    itemkeywords = ItemKeyword.query.filter_by(itemin=item)
+    persons = Person.query.filter_by(itemin=item)
+    attributes = {}
+    for person in persons:
+        personattributes = PersonAttribute.query.filter_by(referenceperson=person).all()
+        attributes[person.id] = personattributes
+    print(attributes)     
+    itemsall = Item.query.order_by(Item.date_posted.desc()).all()
+    return render_template('item.html', title=item.itemname, item=item, itemkeywords=itemkeywords, itemsall=itemsall,
+                           persons = persons, personattributes = attributes)   
+
+@items.route("/item/<int:item_id>/update", methods=['GET', 'POST'])
+@login_required
+def update_item(item_id):
+    item = Item.query.get_or_404(item_id)
+    if item.owner != current_user:
+        abort(403)
+    form=CreateItemForm()
+    if form.validate_on_submit():
+        if form.item_file.data:
+           item.item_file = save_item(form.item_file.data) 
+           item.thumbnail = save_thumbnail(form.item_file.data)         
+        item.itemname = form.itemname.data           
+        item.analysis_keywords = form.analysis_keywords.data
+        item.analysis_persons = form.analysis_persons.data
+        item.analysis_celebs = form.analysis_celebs.data 
+        item.analysis_text = form.analysis_text.data
+        item.analysis_labels = form.analysis_labels.data
+        item.analysis_keywords_theshold = form.analysis_keywords_theshold.data
+        db.session.query(ItemKeyword).filter(ItemKeyword.item_id == item_id).delete()
+        db.session.query(Person).filter(Person.item_id == item_id).delete()
+        db.session.commit()
+        # Object and scene detection - Keywords
+        object_and_scene_detection(item = item)             
+        # Facial analysis - Persons
+        facial_analysis(item = item)        
         flash(gettext('Your item has been updated'), 'success')
         return redirect(url_for('items.item', item_id=item.id))   
     elif request.method == 'GET':
