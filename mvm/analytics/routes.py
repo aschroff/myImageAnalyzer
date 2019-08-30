@@ -4,7 +4,7 @@ from flask_login import current_user, login_required
 from flask_babel import gettext
 from mvm import db, rekognition
 from mvm.items.forms import CreateItemForm
-from mvm.models import User, Item, ItemKeyword, Keyword, Person, Attribute, PersonAttribute
+from mvm.models import User, Item, ItemKeyword, Keyword, Person, Attribute, PersonAttribute, Celebrity
 from mvm.items.utils import save_item, save_thumbnail, get_image_from_file
 from sqlalchemy import func 
 
@@ -44,3 +44,19 @@ def attribute_items(attributetextname):
     attributeitems = Item.query.join(Person).join(PersonAttribute).filter_by(attribute_id = attribute.id).distinct().paginate(page=page, per_page=4)
     itemsall = Item.query.order_by(Item.date_posted.desc()).all()
     return render_template('attribute_items.html', attributeitems=attributeitems, attribute=attribute, itemsall=itemsall)
+
+@analytics.route("/celebrities")
+def celebrities():
+    page = request.args.get('page', 1, type=int)
+    celebritiesstest = db.session.query(func.count(Person.id).label('countpersons'), Celebrity.id, Celebrity.name, Celebrity.aws_id).group_by(Person.celebrity_id).join(Celebrity)
+    a = celebritiesstest.paginate(page=page, per_page=10)
+    itemsall = Item.query.order_by(Item.date_posted.desc()).all()
+    return render_template('celebrities.html', celebrities=a, itemsall=itemsall) 
+    
+@analytics.route("/celebrity/<string:aws_id>")
+def celebrity_items(aws_id):
+    page = request.args.get('page', 1, type=int)
+    celebrity = Celebrity.query.filter_by(aws_id=aws_id).first_or_404()    
+    celebrityitems = Item.query.join(Person).filter_by(celebrity_id = celebrity.id).distinct().paginate(page=page, per_page=4)
+    itemsall = Item.query.order_by(Item.date_posted.desc()).all()
+    return render_template('celebrity_items.html', celebrityitems=celebrityitems, celebrity=celebrity, itemsall=itemsall)

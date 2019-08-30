@@ -1,0 +1,19 @@
+{% extends "layout.html" %}
+{% block content %}
+     <ul class="list-group">
+        {% for celebrity in celebrities.items %}                 
+             <a class="list-group-item list-group-item-light"  href="{{ url_for('analytics.celebrity_items', aws_id=celebrity.aws_id) }}">{{ celebrity.name }}  (  {{ _('Found for') }} {{ celebrity.countpersons }} {{ _('persons') }} )</a>
+        {% endfor %} 
+    </ul>
+    {% for page_num in celebrities.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+        {% if page_num %}
+            {% if celebrities.page == page_num %}      
+                <a class="btn btn-info mb-4" href="{{ url_for('analytics.celebrities', page=page_num)}}">{{ page_num }}</a>              
+            {% else %}
+                <a class="btn btn-outline-info mb-4" href="{{ url_for('analytics.celebrities', page=page_num)}}">{{ page_num }}</a>
+            {% endif %}
+        {% else %}
+        ...
+        {% endif %}
+    {% endfor %}        
+{% endblock content %}

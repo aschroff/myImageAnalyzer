@@ -30,7 +30,11 @@
                 <p class='text-muted'>{{ _('Persons') }}
                 {% set personnr = namespace(nr=1) %}
                 {% for person in persons %}
-                     <p class='text-muted'>{{ _('Person') }} {{ personnr.nr }}                    
+                     <br>
+                     <p class='text-muted'>{{ _('Person') }} {{ personnr.nr }}
+                     {% if person.relatedcelebrity.name | length > 0 %}
+                         <p class='text-muted'>{{ _('Celebrity') }} {{ person.relatedcelebrity.name }}        
+                     {% endif%}            
                      <ul class="list-group">                
                         {% for personattribute in personattributes[person.id] %}     
                             <a class="list-group-item list-group-item-action" >{{ personattribute.referenceattribute.attributetextname }} </a>             

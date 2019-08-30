@@ -4,10 +4,10 @@ from flask_login import current_user, login_required
 from flask_babel import gettext
 from mvm import db, rekognition
 from mvm.items.forms import CreateItemForm
-from mvm.models import User, Item, ItemKeyword, Keyword, Attribute, Person, PersonAttribute
+from mvm.models import User, Item, ItemKeyword, Keyword, Attribute, Person, PersonAttribute, Celebrity
 from mvm.items.utils import save_item, save_thumbnail, get_image_from_file
 
-
+steps = 10
 items = Blueprint('items', __name__)
 
 def object_and_scene_detection(item):
@@ -68,7 +68,6 @@ def facial_analysis(item):
                                personattribute =  PersonAttribute(referenceperson = person, referenceattribute = attribute)  
                                db.session.add(personattribute)                                                            
                            elif 'Value' in personresult[attributename]:
-                                   print (attributename)
                                    if personresult[attributename]['Value']: 
                                        attribute = Attribute.query.filter_by(attributetextname = attributename).first()
                                        if attribute is None:
@@ -78,6 +77,63 @@ def facial_analysis(item):
                                        db.session.add(personattribute)
                        db.session.commit()  
 
+def detectposition(positionx, positiony, comparewidth, compareheight, compareleft, comparetop):
+    x1 = positionx
+    y1 = positiony
+    x2 = positionx + 1/steps
+    y2 = positiony + 1/steps
+    x1c = compareleft
+    y1c = comparetop
+    x2c = compareleft + comparewidth
+    y2c = comparetop + compareheight
+    #print(round(x1, 2), round(y1, 2), round(x2, 2), round(y2, 2), round(x1c, 2), round(y1c, 2), round(x2c, 2), round(y2c, 2))
+#    print((((x1 <= x1c) and (x2 >= x1c)) or ((x1 <= x2c) and (x2 >= x2c))) and \
+#           (((y1 <= y1c) and (y2 >= y1c)) or ((y1 <= y2c) and (y2 >= y2c))))
+    return (((x1 <= x1c) and (x2 >= x1c)) or ((x1 <= x2c) and (x2 >= x1c))) and \
+           (((y1 <= y1c) and (y2 >= y1c)) or ((y1 <= y2c) and (y2 >= y1c)))
+
+def determineoverlap(celebrity, personidentified):
+    overlap = 0
+    for x in range(0,steps, 1):
+        for y in range(0, steps, 1):
+            if detectposition(x/steps ,y/steps ,celebrity['Width'], celebrity['Height'], celebrity['Left'], celebrity['Top']) \
+                and detectposition(x/steps,y/steps,personidentified.BoundingBoxWidth, personidentified.BoundingBoxHeight, personidentified.BoundingBoxLeft, personidentified.BoundingBoxTop):
+                overlap = overlap + 1
+#                print('overlap :' + str(overlap))
+    return overlap           
+
+def celebrity_recognition(item):    
+           if item.analysis_persons and item.analysis_celebs:
+               imgbytes = get_image_from_file(item.item_file)
+               rekres = rekognition.recognize_celebrities(Image={'Bytes': imgbytes})
+               print('celebrity_recognition')
+               for celebrityresult in rekres['CelebrityFaces']:
+                       print('celebrityresult:' + str(celebrityresult))
+                       if celebrityresult['MatchConfidence'] >= item.analysis_keywords_theshold: 
+                           boundingbox = celebrityresult['Face']['BoundingBox']
+                           maxoverlap = 0
+                           for person in item.persons:
+                               print('person:' + str(person.id))
+                               overlap = determineoverlap(celebrity = boundingbox, personidentified = person)
+                               print('overlap person:' + str(overlap))
+                               if overlap > maxoverlap:
+                                   maxoverlap = overlap
+                                   personfit = person
+                                   print('New max:' + str(maxoverlap))
+                           if maxoverlap > 0:
+                                print('found' + str(celebrityresult) + str(personfit.id))
+                                celebrity = Celebrity.query.filter_by(aws_id = celebrityresult['Id']).first()
+                                if celebrity is None:
+                                    if len(celebrityresult['Urls']) > 0:
+                                        celebrity = Celebrity(aws_id = celebrityresult['Id'], name = celebrityresult['Name'], url = celebrityresult['Urls'][0])
+                                    else:
+                                        celebrity = Celebrity(aws_id = celebrityresult['Id'], name = celebrityresult['Name'], url = "http://www.google.de")
+                                    db.session.add(celebrity)
+                                    db.session.commit()
+                                personfit.celebrity_id =  celebrity.id 
+                                db.session.commit()   
+                           else:
+                                print('not found' + str(celebrityresult))                   
 
 @items.route("/item/new", methods=['GET', 'POST'])
 @login_required
@@ -97,7 +153,7 @@ def new_item():
 
            object_and_scene_detection(item = item)
            facial_analysis(item = item)
-
+           celebrity_recognition(item = item)
            flash(gettext('Your new item has been created'), 'success') 
            return redirect(url_for('main.home'))  
     itemsall = Item.query.order_by(Item.date_posted.desc()).all()  
@@ -113,8 +169,7 @@ def item(item_id):
     attributes = {}
     for person in persons:
         personattributes = PersonAttribute.query.filter_by(referenceperson=person).all()
-        attributes[person.id] = personattributes
-    print(attributes)     
+        attributes[person.id] = personattributes   
     itemsall = Item.query.order_by(Item.date_posted.desc()).all()
     return render_template('item.html', title=item.itemname, item=item, itemkeywords=itemkeywords, itemsall=itemsall,
                            persons = persons, personattributes = attributes)   
@@ -143,7 +198,9 @@ def update_item(item_id):
         # Object and scene detection - Keywords
         object_and_scene_detection(item = item)             
         # Facial analysis - Persons
-        facial_analysis(item = item)        
+        facial_analysis(item = item) 
+        
+        celebrity_recognition(item = item)  
         flash(gettext('Your item has been updated'), 'success')
         return redirect(url_for('items.item', item_id=item.id))   
     elif request.method == 'GET':
@@ -166,7 +223,6 @@ def delete(item_id):
     item = Item.query.get_or_404(item_id)
     if item.owner != current_user:
         abort(403)
-#    print(ItemKeyword.query.filter_by(itemin=item).all())
     db.session.delete(item)
     
     db.session.commit()

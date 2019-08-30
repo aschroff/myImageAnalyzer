@@ -73,6 +73,7 @@ class Person(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     date_analysis = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     item_id = db.Column(db.Integer, db.ForeignKey('item.id'), nullable=False)
+    celebrity_id = db.Column(db.Integer, db.ForeignKey('celebrity.id'))
     personattributes = db.relationship('PersonAttribute', backref='referenceperson', lazy=True, cascade="all, delete-orphan")
     BoundingBoxWidth = db.Column(db.Numeric(precision = 18, scale = 17), nullable=False, default = 1)
     BoundingBoxHeight = db.Column(db.Numeric(precision = 18, scale = 17), nullable=False, default = 1)
@@ -97,4 +98,14 @@ class PersonAttribute(db.Model):
     person_id = db.Column(db.Integer, db.ForeignKey('person.id', ondelete='CASCADE'), nullable=False)
     attribute_id = db.Column(db.Integer, db.ForeignKey('attribute.id', ondelete='CASCADE'), nullable=False)
     def __repr__(self):
-        return f"PersonAttribute('{self.date_analysis, self.person_id, self.attribute_id}')"    
+        return f"PersonAttribute('{self.date_analysis, self.person_id, self.attribute_id}')"  
+    
+class Celebrity(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    url = db.Column(db.String(100), nullable=False)
+    aws_id = db.Column(db.String(20), nullable=False)
+    date_create = db.Column(db.DateTime, nullable=False, default=datetime.utcnow) 
+    persons = db.relationship('Person', backref='relatedcelebrity', lazy=True)
+    def __repr__(self):
+        return f"Attribute('{self.name}','{self.date_create}')"    
