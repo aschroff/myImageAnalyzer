@@ -1,3 +1,5 @@
+from datetime import datetime
+import random 
 from flask import Blueprint
 from flask import render_template, url_for, flash, redirect, request, abort
 from flask_login import current_user, login_required
@@ -92,14 +94,13 @@ def detectposition(positionx, positiony, comparewidth, compareheight, comparelef
     return (((x1 <= x1c) and (x2 >= x1c)) or ((x1 <= x2c) and (x2 >= x1c))) and \
            (((y1 <= y1c) and (y2 >= y1c)) or ((y1 <= y2c) and (y2 >= y1c)))
 
-def determineoverlap(celebrity, personidentified):
+def determineoverlap(compare, personidentified):
     overlap = 0
     for x in range(0,steps, 1):
         for y in range(0, steps, 1):
-            if detectposition(x/steps ,y/steps ,celebrity['Width'], celebrity['Height'], celebrity['Left'], celebrity['Top']) \
+            if detectposition(x/steps ,y/steps ,compare['Width'], compare['Height'], compare['Left'], compare['Top']) \
                 and detectposition(x/steps,y/steps,personidentified.BoundingBoxWidth, personidentified.BoundingBoxHeight, personidentified.BoundingBoxLeft, personidentified.BoundingBoxTop):
                 overlap = overlap + 1
-#                print('overlap :' + str(overlap))
     return overlap           
 
 def celebrity_recognition(item):    
@@ -135,6 +136,42 @@ def celebrity_recognition(item):
                            else:
                                 print('not found' + str(celebrityresult))                   
 
+def face_comparison(item):    
+           if item.analysis_persons and item.analysis_targets :
+               imgbytes = get_image_from_file(item.item_file) 
+               print(item.itemname)
+               for target in current_user.targets:
+                   print(target.name)
+                   max_sim = 0
+                   for targetimage in target.targetimages:
+                       print (targetimage.name)
+                       imgbytescompare = get_image_from_file(targetimage.file)
+                       rekres = rekognition.compare_faces(SimilarityThreshold=item.analysis_keywords_theshold, SourceImage={'Bytes': imgbytescompare}, TargetImage={'Bytes': imgbytes})
+                       print(rekres) 
+                       if len(rekres['FaceMatches']) > 0:
+                           sim = rekres['FaceMatches'][0]['Similarity']
+                           print(sim)
+                           if sim >= item.analysis_keywords_theshold: 
+                               if sim > max_sim: 
+                                   boundingbox = rekres['FaceMatches'][0]['Face']['BoundingBox']
+                                   maxoverlap = 0
+                                   for person in item.persons:
+                                       overlap = determineoverlap(compare = boundingbox, personidentified = person)
+                                       print('overlap person:' + str(overlap))
+                                       if overlap > maxoverlap:
+                                           maxoverlap = overlap
+                                           max_sim = sim
+                                           personfit = person
+                                           print('New max:' + str(maxoverlap))
+                                   if maxoverlap > 0:
+                                        personfit.foundtargetimage = targetimage
+                                        db.session.commit()   
+                                   else:
+                                        print('not found') 
+                       else:
+                           print('not found 1')
+
+
 @items.route("/item/new", methods=['GET', 'POST'])
 @login_required
 def new_item():
@@ -146,7 +183,7 @@ def new_item():
            item = Item(item_file = itemfile, itemname = form.itemname.data, thumbnail = thumbnailfile,
                        owner = current_user,  analysis_keywords=form.analysis_keywords.data, 
                        analysis_persons = form.analysis_persons.data, analysis_celebs = form.analysis_celebs.data,
-                       analysis_text = form.analysis_text.data, analysis_labels = form.analysis_labels.data,
+                       analysis_targets = form.analysis_targets.data, analysis_text = form.analysis_text.data, analysis_labels = form.analysis_labels.data,
                        analysis_keywords_theshold = form.analysis_keywords_theshold.data)
            db.session.add(item)
            db.session.commit()
@@ -154,6 +191,8 @@ def new_item():
            object_and_scene_detection(item = item)
            facial_analysis(item = item)
            celebrity_recognition(item = item)
+           # Face comparision
+           face_comparison(item=item)  
            flash(gettext('Your new item has been created'), 'success') 
            return redirect(url_for('main.home'))  
     itemsall = Item.query.order_by(Item.date_posted.desc()).all()  
@@ -189,6 +228,7 @@ def update_item(item_id):
         item.analysis_keywords = form.analysis_keywords.data
         item.analysis_persons = form.analysis_persons.data
         item.analysis_celebs = form.analysis_celebs.data 
+        item.analysis_targets = form.analysis_targets.data
         item.analysis_text = form.analysis_text.data
         item.analysis_labels = form.analysis_labels.data
         item.analysis_keywords_theshold = form.analysis_keywords_theshold.data
@@ -199,8 +239,10 @@ def update_item(item_id):
         object_and_scene_detection(item = item)             
         # Facial analysis - Persons
         facial_analysis(item = item) 
-        
+        # Celebrity recognition        
         celebrity_recognition(item = item)  
+        # Face comparision
+        face_comparison(item=item)
         flash(gettext('Your item has been updated'), 'success')
         return redirect(url_for('items.item', item_id=item.id))   
     elif request.method == 'GET':
@@ -209,6 +251,7 @@ def update_item(item_id):
         form.analysis_keywords.data = item.analysis_keywords
         form.analysis_persons.data = item.analysis_persons        
         form.analysis_celebs.data = item.analysis_celebs
+        form.analysis_targets.data = item.analysis_targets               
         form.analysis_text.data = item.analysis_text
         form.analysis_labels.data = item.analysis_labels
         form.analysis_keywords_theshold.data = item.analysis_keywords_theshold

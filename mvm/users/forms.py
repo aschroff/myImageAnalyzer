@@ -40,7 +40,7 @@ class UpdateAccountForm(FlaskForm):
                            validators=[DataRequired(), Length(min=2, max=20)])
     email = StringField(lazy_gettext('Email'),
                         validators=[DataRequired(), Email()])
-    picture = FileField(lazy_gettext('Profile Picture'), validators=[FileAllowed(['jpg', 'png'])])
+    picture = FileField(lazy_gettext('Profile Picture'), validators=[FileAllowed(['jpg', 'png'])])        
     submit = SubmitField(lazy_gettext('Update'))
 
     def validate_username(self, username):

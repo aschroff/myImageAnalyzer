@@ -53,5 +53,14 @@
                 {{ form.submit(class="btn btn-outline-info") }}
             </div>
         </form>
+        <legend class="border-bottom mb-4">{{ _('Targets') }}</legend>       
+        {% if current_user.targets | count > 0 %}
+            {% for target in current_user.targets %}
+                 <a class="list-group-item list-group-item-action" href="{{ url_for('analytics.target', target_id=target.id) }}">{{ target.name }} </a>
+            {% endfor %}
+        {% else %}    
+            <p class='text-muted'>{{ _('No targets defined') }}      
+        {% endif%} 
+            <a class="btn btn-secondary btn-sm mt-1 mb-1"  href="{{ url_for('analytics.new_target', user_id=current_user.id) }}">{{ _('New') }}</a>   
     </div>
 {% endblock content %}

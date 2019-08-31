@@ -35,6 +35,9 @@
                      {% if person.relatedcelebrity.name | length > 0 %}
                          <p class='text-muted'>{{ _('Celebrity') }} {{ person.relatedcelebrity.name }}        
                      {% endif%}            
+                     {% if person.foundtargetimage is defined and person.foundtargetimage and person.foundtargetimage !="" %}
+                         <p class='text-muted'>{{ _('Target') }} {{ person.foundtargetimage.imagefortarget.name }} - {{ person.foundtargetimage.name }}        
+                     {% endif%}
                      <ul class="list-group">                
                         {% for personattribute in personattributes[person.id] %}     
                             <a class="list-group-item list-group-item-action" >{{ personattribute.referenceattribute.attributetextname }} </a>             

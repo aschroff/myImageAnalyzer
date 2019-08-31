@@ -1,0 +1,37 @@
+{% extends "layout.html" %}
+{% block content %}
+    <article class="media content-section">
+      <div class="media-body">
+        <div class="article-metadata">
+          <a class="mr-2">{{ target.name}}</a><br>
+          <a class="mr-2">{{ target.date_created}}</a><br>
+          {% if target.searcher == current_user %}
+              <div>
+                  <a class="btn btn-secondary btn-sm mt-1 mb-1"  href="{{ url_for('analytics.update_target', target_id=target.id) }}">{{ _('Update') }}</a>
+                  <button type="Button" class="btn btn-danger btn-sm m1" data-toggle="modal" data-target="#deleteModal">{{ _('Delete') }}</button>
+              </div>
+          {% endif %}
+        </div>     
+      </div>
+
+    </article>
+    <!-- Modal -->
+    <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="{{ _('Delete Target?') }}" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="deleteModalLabel">{{ _('Delete target') }}</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ _('Cancel') }}</button>
+            <form action="{{ url_for('analytics.deletetarget', target_id=target.id) }}" method="POST">
+                <input class="btn btn-danger"type="submit" value="{{ _('Delete') }}">
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+{% endblock content %}

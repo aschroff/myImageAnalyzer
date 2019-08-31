@@ -1,0 +1,38 @@
+{% extends "layout.html" %}
+{% block content %}
+    <article class="media content-section">
+      <div class="media-body">
+        <div class="article-metadata">
+          <a class="mr-2">{{ targetimage.name}}</a><br>
+          <a class="mr-2">{{ targetimage.age}}</a><br>
+          <a class="mr-2">{{ targetimage.date_created}}</a><br>
+          {% if targetimage.imagefortarget.searcher == current_user %}
+              <div>
+                  <a class="btn btn-secondary btn-sm mt-1 mb-1"  href="{{ url_for('analytics.update_targetimage', targetimage_id=targetimage.id) }}">{{ _('Update') }}</a>
+                  <button type="Button" class="btn btn-danger btn-sm m1" data-toggle="modal" data-target="#deleteModal">{{ _('Delete') }}</button>
+              </div>
+          {% endif %}
+        </div>     
+      </div>
+      <img class="rounded-circle account-img" src="{{ url_for('static', filename='images/thumbnails/' + targetimage.thumbnail) }}"><br>
+    </article>
+    <!-- Modal -->
+    <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="{{ _('Delete Item?') }}" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="deleteModalLabel">{{ _('Eintrag löschen') }}</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ _('Cancel') }}</button>
+            <form action="{{ url_for('analytics.deletetargetimage', targetimage_id=targetimage.id) }}" method="POST">
+                <input class="btn btn-danger"type="submit" value="{{ _('Delete') }}">
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+{% endblock content %}

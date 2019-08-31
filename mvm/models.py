@@ -16,6 +16,7 @@ class User(db.Model, UserMixin):
     image_file = db.Column(db.String(20), nullable=False, default='default.jpg')
     password = db.Column(db.String(60), nullable=False)
     items = db.relationship('Item', backref='owner', lazy=True)
+    targets = db.relationship('Target', backref='searcher', lazy=True)
 
     def get_reset_token(self, expires_sec=1800):
         s = Serializer(current_app.config['SECRET_KEY'], expires_sec)
@@ -43,6 +44,7 @@ class Item(db.Model):
     analysis_keywords = db.Column(db.Boolean, nullable=False, default=False)
     analysis_persons = db.Column(db.Boolean, nullable=False, default=False)
     analysis_celebs = db.Column(db.Boolean, nullable=False, default=False)
+    analysis_targets = db.Column(db.Boolean, nullable=False, default=False)
     analysis_text = db.Column(db.Boolean, nullable=False, default=False)
     analysis_labels = db.Column(db.Boolean, nullable=False, default=False)
     analysis_keywords_theshold = db.Column(db.Integer, default=False)
@@ -74,6 +76,7 @@ class Person(db.Model):
     date_analysis = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     item_id = db.Column(db.Integer, db.ForeignKey('item.id'), nullable=False)
     celebrity_id = db.Column(db.Integer, db.ForeignKey('celebrity.id'))
+    targetimage_id = db.Column(db.Integer, db.ForeignKey('targetimage.id'))
     personattributes = db.relationship('PersonAttribute', backref='referenceperson', lazy=True, cascade="all, delete-orphan")
     BoundingBoxWidth = db.Column(db.Numeric(precision = 18, scale = 17), nullable=False, default = 1)
     BoundingBoxHeight = db.Column(db.Numeric(precision = 18, scale = 17), nullable=False, default = 1)
@@ -109,3 +112,25 @@ class Celebrity(db.Model):
     persons = db.relationship('Person', backref='relatedcelebrity', lazy=True)
     def __repr__(self):
         return f"Attribute('{self.name}','{self.date_create}')"    
+    
+class Target(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    date_created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    targetimages = db.relationship('Targetimage', backref='imagefortarget', lazy=True, cascade="delete")
+    def __repr__(self):
+        return f"Target({self.name}'','{self.date_created}')"
+        
+class Targetimage(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    date_created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    target_id = db.Column(db.Integer, db.ForeignKey('target.id'), nullable=False)
+    file = db.Column(db.String(20), nullable=False, default='default.jpg')
+    name = db.Column(db.String(100), nullable=False)
+    thumbnail = db.Column(db.String(20), nullable=False, default='default.jpg')
+    age = db.Column(db.Integer, nullable=False, default=999)
+    persons = db.relationship('Person', backref='foundtargetimage', lazy=True)
+    
+    def __repr__(self):
+        return f"Targetimage('{self.date_created, self.target_id, self.name}')"     
