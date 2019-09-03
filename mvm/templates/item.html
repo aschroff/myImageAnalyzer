@@ -6,7 +6,8 @@
         <div class="article-metadata">
           <a class="mr-2">{{ item.itemname}}</a><br>
           <small class="text-muted" href="{{ url_for('items.user_items', username=item.owner.username) }}">{{ item.owner.username}}</small>
-          <small class="text-muted">{{ item.date_posted.strftime('%d-%m-%y') }}</small>
+          <small class="text-muted">{{ item.date_posted.strftime('%d-%m-%y') }}</small><br>
+
           {% if item.owner == current_user %}
               <div>
                   <a class="btn btn-secondary btn-sm mt-1 mb-1"  href="{{ url_for('items.update_item', item_id=item.id) }}">{{ _('Update') }}</a>
@@ -14,6 +15,7 @@
               </div>
           {% endif %}
         </div>
+
         {% if itemkeywords.count() > 0 %}
             <div class="col-md-6">
                 <p class='text-muted'>{{ _('Keywords') }}
@@ -47,6 +49,9 @@
                 {% endfor %}                   
                 </p>
             </div>
+        {% endif %}
+        {% if item.analysis_text %}
+                <a class="mr-2">{{ _('Text found') }}: {{ item.text}}</a><br>
         {% endif %}
       </div>
       <img class="rounded-circle account-img" src="{{ url_for('static', filename='images/thumbnails/' + item.thumbnail) }}"><br>

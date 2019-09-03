@@ -8,6 +8,7 @@ from mvm import db, rekognition
 from mvm.items.forms import CreateItemForm
 from mvm.models import User, Item, ItemKeyword, Keyword, Attribute, Person, PersonAttribute, Celebrity
 from mvm.items.utils import save_item, save_thumbnail, get_image_from_file
+from mvm.analytics.forms import SearchItemForm
 
 steps = 10
 items = Blueprint('items', __name__)
@@ -171,6 +172,22 @@ def face_comparison(item):
                        else:
                            print('not found 1')
 
+def text_detection(item):    
+           if item.analysis_text:
+               imgbytes = get_image_from_file(item.item_file) 
+               rekres = rekognition.detect_text(Image={'Bytes': imgbytes})
+               print(rekres)
+               item.text = ''
+               for worddetected in rekres['TextDetections']:
+                   if worddetected['Confidence'] >= item.analysis_keywords_theshold: 
+                       textpiece = worddetected['DetectedText']
+                       print(textpiece)
+                       newtext = str(item.text) + str(' ') + str(textpiece)
+                       if len(newtext) <= 1000:
+                           item.text = newtext
+           print(item.text)        
+           db.session.commit() 
+                   
 
 @items.route("/item/new", methods=['GET', 'POST'])
 @login_required
@@ -198,7 +215,8 @@ def new_item():
     itemsall = Item.query.order_by(Item.date_posted.desc()).all()  
     form.analysis_keywords.data = True
     form.analysis_keywords_theshold.data = 90
-    return render_template('create_item.html', title='New Item', form=form, legend=gettext('New Item'), itemsall=itemsall)
+    searchform = SearchItemForm()
+    return render_template('create_item.html', title='New Item', form=form, legend=gettext('New Item'), itemsall=itemsall, searchform=searchform)
 
 @items.route("/item/<int:item_id>")
 def item(item_id):
@@ -210,8 +228,9 @@ def item(item_id):
         personattributes = PersonAttribute.query.filter_by(referenceperson=person).all()
         attributes[person.id] = personattributes   
     itemsall = Item.query.order_by(Item.date_posted.desc()).all()
+    searchform = SearchItemForm()    
     return render_template('item.html', title=item.itemname, item=item, itemkeywords=itemkeywords, itemsall=itemsall,
-                           persons = persons, personattributes = attributes)   
+                           persons = persons, personattributes = attributes, searchform=searchform)   
 
 @items.route("/item/<int:item_id>/update", methods=['GET', 'POST'])
 @login_required
@@ -243,6 +262,8 @@ def update_item(item_id):
         celebrity_recognition(item = item)  
         # Face comparision
         face_comparison(item=item)
+        # Test in item
+        text_detection(item=item)
         flash(gettext('Your item has been updated'), 'success')
         return redirect(url_for('items.item', item_id=item.id))   
     elif request.method == 'GET':
@@ -257,8 +278,9 @@ def update_item(item_id):
         form.analysis_keywords_theshold.data = item.analysis_keywords_theshold
     itemsall = Item.query.order_by(Item.date_posted.desc()).all()
     itemkeywords = ItemKeyword.query.filter_by(itemin=item).all()
+    searchform = SearchItemForm()
     return render_template('create_item.html', title="Update Item",
-                           form=form, legend=gettext('Update Item'), item=item, itemsall=itemsall, itemkeywords=itemkeywords)  
+                           form=form, legend=gettext('Update Item'), item=item, itemsall=itemsall, itemkeywords=itemkeywords, searchform=searchform)  
     
 @items.route("/item/<int:item_id>/delete", methods=['POST'])
 @login_required
@@ -279,7 +301,8 @@ def user_items(username):
     user = User.query.filter_by(username=username).first_or_404()
     items = Item.query.filter_by(owner=user).order_by(Item.date_posted.desc()).paginate(page=page, per_page=4)
     itemsall = Item.query.order_by(Item.date_posted.desc()).all()
-    return render_template('user_items.html', items=items, user=user, itemsall=itemsall)
+    searchform = SearchItemForm()    
+    return render_template('user_items.html', items=items, user=user, itemsall=itemsall, searchform=searchform)
 
 
     

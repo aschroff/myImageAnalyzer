@@ -48,6 +48,7 @@ class Item(db.Model):
     analysis_text = db.Column(db.Boolean, nullable=False, default=False)
     analysis_labels = db.Column(db.Boolean, nullable=False, default=False)
     analysis_keywords_theshold = db.Column(db.Integer, default=False)
+    text = db.Column(db.String(1000), nullable=False, default='')
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     itemkeywords = db.relationship('ItemKeyword', backref='itemin', lazy=True, cascade="delete")
     persons = db.relationship('Person', backref='itemin', lazy=True, cascade="delete")

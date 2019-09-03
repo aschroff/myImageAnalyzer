@@ -46,7 +46,25 @@
           </div>
         </div>
       </nav>
-    </header>
+      <form method="POST" action="{{ url_for('analytics.search') }}" enctype="multipart/form-data">
+        {{ searchform.hidden_tag() }}
+        <fieldset class="form-group">           
+            <div class="form-group mx-sm-3 mb-2">
+                {% if searchform.searchtext.errors %}
+                    {{ searchform.searchtext(class="form-control form-control-lg is-invalid") }}
+                    <div class="invalid-feedback">
+                        {% for error in searchform.searchtext.errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    {{ searchform.searchtext(class="form-control form-control-sm") }}
+                {% endif %}                    
+            {{ searchform.submit(class="btn btn-outline-info") }}      
+            </div>
+        </fieldset>
+
+    </form>
     <main role="main" class="container">
       <div class="row">
         <div class="col-md-8">
