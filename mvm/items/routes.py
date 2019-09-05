@@ -116,7 +116,7 @@ def celebrity_recognition(item):
                            maxoverlap = 0
                            for person in item.persons:
                                print('person:' + str(person.id))
-                               overlap = determineoverlap(celebrity = boundingbox, personidentified = person)
+                               overlap = determineoverlap(compare = boundingbox, personidentified = person)
                                print('overlap person:' + str(overlap))
                                if overlap > maxoverlap:
                                    maxoverlap = overlap
