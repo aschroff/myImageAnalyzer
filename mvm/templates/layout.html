@@ -20,7 +20,7 @@
     <header class="site-header">
       <nav class="navbar navbar-expand-md navbar-dark bg-steel fixed-top">
         <div class="container">
-          <a class="navbar-brand mr-4" href="/">My Video Machine</a>
+          <a class="navbar-brand mr-4" href="/">MVM</a>
           <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggle" aria-controls="navbarToggle" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
           </button>
@@ -32,6 +32,15 @@
               <a class="nav-item nav-link" href="{{ url_for('analytics.attributes') }}">{{ _('Attributes') }}</a>
               <a class="nav-item nav-link" href="{{ url_for('analytics.celebrities') }}">{{ _('Celebrities') }}</a>
             </div>
+            <form method="POST" action="{{ url_for('analytics.search') }}" enctype="multipart/form-data">
+                {{ searchform.hidden_tag() }}
+                <table>
+                    <tr>
+                        <td>{{ searchform.searchtext(class="form-control mr-sm-2") }}</td>
+                        <td>{{ searchform.submit(class="btn btn-outline-info my-2 my-sm-0") }}</td>                        
+                    </tr>
+                </table>
+            </form>
             <!-- Navbar Right Side -->
             <div class="navbar-nav">
             {% if current_user.is_authenticated %}
@@ -44,27 +53,12 @@
             {% endif %}
             </div>
           </div>
+
         </div>
       </nav>
-      <form method="POST" action="{{ url_for('analytics.search') }}" enctype="multipart/form-data">
-        {{ searchform.hidden_tag() }}
-        <fieldset class="form-group">           
-            <div class="form-group mx-sm-3 mb-2">
-                {% if searchform.searchtext.errors %}
-                    {{ searchform.searchtext(class="form-control form-control-lg is-invalid") }}
-                    <div class="invalid-feedback">
-                        {% for error in searchform.searchtext.errors %}
-                            <span>{{ error }}</span>
-                        {% endfor %}
-                    </div>
-                {% else %}
-                    {{ searchform.searchtext(class="form-control form-control-sm") }}
-                {% endif %}                    
-            {{ searchform.submit(class="btn btn-outline-info") }}      
-            </div>
-        </fieldset>
 
-    </form>
+
+
     <main role="main" class="container">
       <div class="row">
         <div class="col-md-8">

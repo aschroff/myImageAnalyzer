@@ -2,11 +2,12 @@ from flask import Blueprint
 from flask import render_template, url_for, flash, redirect, request, abort
 from flask_login import current_user, login_required
 from flask_babel import gettext
-from mvm.analytics.forms import CreateTargetForm, CreateTargetImageForm, SearchItemForm
+from mvm.analytics.forms import CreateTargetForm, CreateTargetImageForm, SearchItemForm, FilterItemForm
 from mvm.models import User, Item, ItemKeyword, Keyword, Person, Attribute, PersonAttribute, Celebrity, Target, Targetimage
 from mvm.items.utils import save_item, save_thumbnail, get_image_from_file
 from sqlalchemy import func 
 from mvm import db
+from sqlalchemy.sql import union
 
 
 analytics = Blueprint('analytics', __name__)
@@ -182,21 +183,67 @@ def deletetarget(target_id):
 
 @analytics.route("/search/", methods=['POST'])
 def search():
-    form = SearchItemForm()
-    print('bla')
-    print(form.searchtext.data)
-    return redirect(url_for('analytics.results', search_query=form.searchtext.data))
+    print('Schritt 1')
+    print(request.args)
+    form = SearchItemForm()    
+    if len(form.searchtext.data) > 0:
+        search_query=form.searchtext.data
+    else:
+        search_query = str('*')
+    return redirect(url_for('analytics.results', search_query=search_query, search_keywords=True, search_attributes = False,
+                            search_celebs = False, search_text = False, search_age = '', searchtexthidden=form.searchtext.data))
+
+@analytics.route("/filter/<search_query>", methods=['POST'])
+def filter(search_query):
+    print('Schritt 1a')
+    print(request.args)
+    formsearch = SearchItemForm()  
+    formfilter = FilterItemForm()  
+    return redirect(url_for('analytics.results', search_query=search_query, search_keywords=formfilter.search_keywords.data, search_attributes = formfilter.search_attributes.data,
+                            search_celebs = formfilter.search_celebs.data, search_text = formfilter.search_text.data, search_age = formfilter.search_age.data, searchtexthidden = formfilter.searchtexthidden.data))
+    
 
 @analytics.route("/results/<search_query>")
 def results(search_query):
-    print('bla1')
     print(search_query)
+    print(request.args)
     page = request.args.get('page', 1, type=int)
-    items = Item.query.join(ItemKeyword).join(Keyword).filter(Keyword.keywordtextname.contains(search_query)).distinct().paginate(page=page, per_page=4)
+    if search_query != str('*'):
+         print('WWWW')
+         itemscollect = Item.query.filter(Item.itemname.contains(search_query)).distinct()         
+    else:
+        itemscollect = Item.query.order_by(Item.date_posted.desc())
+        
+    print(itemscollect)    
+    if request.args.get('search_keywords') == 'True':
+        print('XXXXX')
+        itemscollect1 = Item.query.join(ItemKeyword).join(Keyword).filter(Keyword.keywordtextname.contains(search_query)).distinct()
+        itemscollect2 = itemscollect1.union(itemscollect)
+        print(itemscollect2)
+        itemscollect = itemscollect2
+
+    
+
+    items = itemscollect.paginate(page=page, per_page=4)    
     itemsall = Item.query.order_by(Item.date_posted.desc()).all()  
-    form = SearchItemForm()
-    form.searchtext.data = search_query
-    return render_template('searchresults.html', title='Search', legend=gettext('Item search'), searchform = form, itemresults = items, itemsall=itemsall, search_query = search_query)
+    formsearch = SearchItemForm()
+    formfilter = FilterItemForm()
+    formsearch.searchtext.data = request.args.get('searchtexthidden')
+    if request.args.get('search_keywords') == 'True':
+        formfilter.search_keywords.data = request.args.get('search_keywords')
+    if request.args.get('search_attributes') == 'True':
+        formfilter.search_attributes.data = request.args.get('search_attributes')
+    if request.args.get('search_celebs') == 'True':
+        formfilter.search_celebs.data = request.args.get('search_celebs')
+    if request.args.get('search_text') == 'True':        
+        formfilter.search_text.data = request.args.get('search_text')
+    formfilter.search_age.data = request.args.get('search_age')
+    formfilter.searchtexthidden.data = request.args.get('searchtexthidden')
+    
+    if current_user.is_authenticated:
+        choices = Target.query.filter_by(searcher = current_user)
+        formfilter.search_targets.query = choices    
+    return render_template('searchresults.html', title='Search', legend=gettext('Item search'), searchform = formsearch, filterform = formfilter, itemresults = items, itemsall=itemsall, search_query = search_query)
 
 #    
 #    choices = Target.query.filter_by(searcher = current_user)

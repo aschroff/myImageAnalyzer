@@ -1,5 +1,28 @@
 {% extends "layout.html" %}
 {% block content %}
+<TD><p><a class="btn btn-outline-info my-2 my-sm-0" data-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">{{ _('Filter') }}</a></p>
+<form method="POST" action="{{ url_for('analytics.filter', search_query=search_query) }}" enctype="multipart/form-data">
+    <div class="collapse" id="collapseExample">
+      <div class="card card-body">
+        <table>
+            <tr>
+                 <td>{{ filterform.search_keywords.label(class="form-control-label") }} {{ filterform.search_keywords(class="form-control-button", onchange="submit()") }}</td>
+                 <td>{{ filterform.search_attributes.label(class="form-control-label") }} {{ filterform.search_attributes(class="form-control-button", onchange="submit()") }}</td>
+                 <td>{{ filterform.search_celebs.label(class="form-control-label") }} {{ filterform.search_celebs(class="form-control-button", onchange="submit()") }}</td>
+                 <td>{{ filterform.search_text.label(class="form-control-label") }} {{ filterform.search_text(class="form-control-button", onchange="submit()") }}</td>
+            </tr>
+        </table>    
+        <table>    
+            <tr>
+                 <td>{{ filterform.search_age.label(class="form-control-label") }} {{ filterform.search_age(class="form-control-input", onchange="submit()") }}</td> 
+                 {% if current_user.is_authenticated %}
+                     <td>{{ filterform.search_targets.label(class="form-control-label") }} {{ filterform.search_targets(class="form-control-input", onchange="submit()") }}</td>        
+                 {% endif %}    
+            </tr>             
+        </table>
+      </div>
+    </div>
+</form>
 <h1 class="mb-3">{{ _('Results') }} ({{ itemresults.total }})</h1>
     {% for item in itemresults.items %}
         <article class="media content-section">
@@ -14,12 +37,17 @@
           <img class="rounded-circle account-img" src="{{ url_for('static', filename='images/thumbnails/' + item.thumbnail) }}">
         </article>
     {% endfor %}
+    {% set search_keywords = filterform.search_keywords.data %}
+    {% set search_attributes = filterform.search_attributes.data %}
+    {% set search_celebs = filterform.search_celebs.data %}
+    {% set search_text = filterform.search_text.data %}
+    {% set search_age = filterform.search_age.data %}
     {% for page_num in itemresults.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
         {% if page_num %}
             {% if itemresults.page == page_num %}      
-                <a class="btn btn-info mb-4" href="{{ url_for('analytics.results', search_query = search_query, page = page_num)}}">{{ page_num }}</a>              
+                <a class="btn btn-info mb-4" href="{{ url_for('analytics.results', search_query = search_query, search_keywords=search_keywords, search_attributes = search_attributes, search_celebs = search_celebs, search_text = search_text, search_age=search_age , page = page_num)}}">{{ page_num }}</a>              
             {% else %}
-                <a class="btn btn-outline-info mb-4" href="{{ url_for('analytics.results', search_query = search_query, page = page_num)}}">{{ page_num }}</a>
+                <a class="btn btn-outline-info mb-4" href="{{ url_for('analytics.results', search_query = search_query, search_keywords=search_keywords, search_attributes = search_attributes, search_celebs = search_celebs, search_text = search_text, search_age=search_age, page = page_num)}}">{{ page_num }}</a>
             {% endif %}
         {% else %}
         ...
