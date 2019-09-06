@@ -13,6 +13,24 @@ from mvm.analytics.forms import SearchItemForm
 steps = 10
 items = Blueprint('items', __name__)
 
+def unsafe_content_detection(item):
+       if item.analysis_labels:
+           imgbytes = get_image_from_file(item.item_file)
+           rekres = rekognition.detect_moderation_labels(Image={'Bytes': imgbytes}, MinConfidence=item.analysis_keywords_theshold)
+           print(rekres)
+           for label in rekres['ModerationLabels']:
+                   print(len(label['ParentName']))
+                   print(label['ParentName'])
+                   if len(label['ParentName']) > 0:
+                       labeltext = label['ParentName'] + " - " + label['Name']     
+                       keyword = Keyword.query.filter_by(keywordtextname = labeltext).first()
+                       if keyword is None:
+                           keyword = Keyword(keywordtextname = labeltext)
+                           db.session.add(keyword)
+                       itemkeyword = ItemKeyword(reference = keyword, itemin = item)
+                       db.session.add(itemkeyword)
+           db.session.commit()
+
 def object_and_scene_detection(item):
        if item.analysis_keywords:
            imgbytes = get_image_from_file(item.item_file)
@@ -26,6 +44,7 @@ def object_and_scene_detection(item):
                    itemkeyword = ItemKeyword(reference = keyword, itemin = item)
                    db.session.add(itemkeyword)
            db.session.commit()
+           
 
 def facial_analysis(item):    
            if item.analysis_persons:
@@ -204,12 +223,18 @@ def new_item():
                        analysis_keywords_theshold = form.analysis_keywords_theshold.data)
            db.session.add(item)
            db.session.commit()
-
-           object_and_scene_detection(item = item)
-           facial_analysis(item = item)
-           celebrity_recognition(item = item)
+           # Object and scene detection - Keywords
+           object_and_scene_detection(item = item)             
+           # Facial analysis - Persons
+           facial_analysis(item = item) 
+           # Celebrity recognition        
+           celebrity_recognition(item = item)  
            # Face comparision
-           face_comparison(item=item)  
+           face_comparison(item=item)
+           # Test in item
+           text_detection(item=item)
+           # Image moderation
+           unsafe_content_detection(item = item)  
            flash(gettext('Your new item has been created'), 'success') 
            return redirect(url_for('main.home'))  
     itemsall = Item.query.order_by(Item.date_posted.desc()).all()  
@@ -264,6 +289,8 @@ def update_item(item_id):
         face_comparison(item=item)
         # Test in item
         text_detection(item=item)
+        # Image moderation
+        unsafe_content_detection(item = item) 
         flash(gettext('Your item has been updated'), 'success')
         return redirect(url_for('items.item', item_id=item.id))   
     elif request.method == 'GET':
