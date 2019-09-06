@@ -18,7 +18,7 @@ loginmanager = LoginManager()
 loginmanager.login_view ='users.login'
 loginmanager.login_message = 'info'
 
-rekognition = boto3.client('rekognition')
+rekognition = boto3.client('rekognition', region_name='eu-central-1')
 
 
 
