@@ -16,7 +16,7 @@ items = Blueprint('items', __name__)
 def unsafe_content_detection(item):
        if item.analysis_labels:
            imgbytes = get_image_from_file(item.item_file)
-           rekres = rekognition.detect_moderation_labels(Image={'Bytes': imgbytes}, MinConfidence=item.analysis_keywords_theshold)
+           rekres = rekognition.detect_moderation_labels(Image={'Bytes': imgbytes}, MinConfidence=item.analysis_threshold)
            print(rekres)
            for label in rekres['ModerationLabels']:
                    print(len(label['ParentName']))
@@ -34,7 +34,7 @@ def unsafe_content_detection(item):
 def object_and_scene_detection(item):
        if item.analysis_keywords:
            imgbytes = get_image_from_file(item.item_file)
-           rekres = rekognition.detect_labels(Image={'Bytes': imgbytes}, MinConfidence=item.analysis_keywords_theshold)
+           rekres = rekognition.detect_labels(Image={'Bytes': imgbytes}, MinConfidence=item.analysis_threshold)
            for label in rekres['Labels']:
                    itemkeywordstring = str(label['Name'])
                    keyword = Keyword.query.filter_by(keywordtextname = itemkeywordstring).first()
@@ -65,7 +65,7 @@ def facial_analysis(item):
                        for attributename in personresult.keys():
                            if attributename == 'Emotions':
                                for emotion in personresult[attributename]:
-                                   if emotion['Confidence'] >= item.analysis_keywords_theshold:
+                                   if emotion['Confidence'] >= item.analysis_threshold:
                                         emotionname = emotion['Type']                                      
                                         attribute = Attribute.query.filter_by(attributetextname = emotionname).first()
                                         if attribute is None:
@@ -130,7 +130,7 @@ def celebrity_recognition(item):
                print('celebrity_recognition')
                for celebrityresult in rekres['CelebrityFaces']:
                        print('celebrityresult:' + str(celebrityresult))
-                       if celebrityresult['MatchConfidence'] >= item.analysis_keywords_theshold: 
+                       if celebrityresult['MatchConfidence'] >= item.analysis_threshold: 
                            boundingbox = celebrityresult['Face']['BoundingBox']
                            maxoverlap = 0
                            for person in item.persons:
@@ -166,12 +166,12 @@ def face_comparison(item):
                    for targetimage in target.targetimages:
                        print (targetimage.name)
                        imgbytescompare = get_image_from_file(targetimage.file)
-                       rekres = rekognition.compare_faces(SimilarityThreshold=item.analysis_keywords_theshold, SourceImage={'Bytes': imgbytescompare}, TargetImage={'Bytes': imgbytes})
+                       rekres = rekognition.compare_faces(SimilarityThreshold=item.analysis_threshold, SourceImage={'Bytes': imgbytescompare}, TargetImage={'Bytes': imgbytes})
                        print(rekres) 
                        if len(rekres['FaceMatches']) > 0:
                            sim = rekres['FaceMatches'][0]['Similarity']
                            print(sim)
-                           if sim >= item.analysis_keywords_theshold: 
+                           if sim >= item.analysis_threshold: 
                                if sim > max_sim: 
                                    boundingbox = rekres['FaceMatches'][0]['Face']['BoundingBox']
                                    maxoverlap = 0
@@ -198,7 +198,7 @@ def text_detection(item):
                print(rekres)
                item.text = ''
                for worddetected in rekres['TextDetections']:
-                   if worddetected['Confidence'] >= item.analysis_keywords_theshold: 
+                   if worddetected['Confidence'] >= item.analysis_threshold: 
                        textpiece = worddetected['DetectedText']
                        print(textpiece)
                        newtext = str(item.text) + str(' ') + str(textpiece)
@@ -220,7 +220,7 @@ def new_item():
                        owner = current_user,  analysis_keywords=form.analysis_keywords.data, 
                        analysis_persons = form.analysis_persons.data, analysis_celebs = form.analysis_celebs.data,
                        analysis_targets = form.analysis_targets.data, analysis_text = form.analysis_text.data, analysis_labels = form.analysis_labels.data,
-                       analysis_keywords_theshold = form.analysis_keywords_theshold.data)
+                       analysis_threshold = form.analysis_threshold.data)
            db.session.add(item)
            db.session.commit()
            # Object and scene detection - Keywords
@@ -239,7 +239,7 @@ def new_item():
            return redirect(url_for('main.home'))  
     itemsall = Item.query.order_by(Item.date_posted.desc()).all()  
     form.analysis_keywords.data = True
-    form.analysis_keywords_theshold.data = 90
+    form.analysis_threshold.data = 90
     searchform = SearchItemForm()
     return render_template('create_item.html', title='New Item', form=form, legend=gettext('New Item'), itemsall=itemsall, searchform=searchform)
 
@@ -275,7 +275,7 @@ def update_item(item_id):
         item.analysis_targets = form.analysis_targets.data
         item.analysis_text = form.analysis_text.data
         item.analysis_labels = form.analysis_labels.data
-        item.analysis_keywords_theshold = form.analysis_keywords_theshold.data
+        item.analysis_threshold = form.analysis_threshold.data
         db.session.query(ItemKeyword).filter(ItemKeyword.item_id == item_id).delete()
         db.session.query(Person).filter(Person.item_id == item_id).delete()
         db.session.commit()
@@ -302,7 +302,7 @@ def update_item(item_id):
         form.analysis_targets.data = item.analysis_targets               
         form.analysis_text.data = item.analysis_text
         form.analysis_labels.data = item.analysis_labels
-        form.analysis_keywords_theshold.data = item.analysis_keywords_theshold
+        form.analysis_threshold.data = item.analysis_threshold
     itemsall = Item.query.order_by(Item.date_posted.desc()).all()
     itemkeywords = ItemKeyword.query.filter_by(itemin=item).all()
     searchform = SearchItemForm()

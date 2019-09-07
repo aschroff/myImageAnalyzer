@@ -6,6 +6,7 @@ from flask_login import LoginManager
 from flask_mail import Mail
 from mvm.config import Config
 from flask_babel import Babel
+from flask_migrate import Migrate
 import boto3
 
 
@@ -17,6 +18,7 @@ babel = Babel()
 loginmanager = LoginManager()
 loginmanager.login_view ='users.login'
 loginmanager.login_message = 'info'
+migrate = Migrate()
 
 rekognition = boto3.client('rekognition', region_name='eu-central-1')
 
@@ -31,6 +33,7 @@ def create_app(config_class=Config):
     bcrypt.init_app(application)
     babel.init_app(application)
     loginmanager.init_app(application)
+    migrate.init_app(application, db)
     
     from mvm.users.routes import users
     from mvm.items.routes import items

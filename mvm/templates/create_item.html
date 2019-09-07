@@ -106,16 +106,16 @@
                 {% endif %}
             </div>    
             <div class="form-group">
-                {{ form.analysis_keywords_theshold.label(class="form-control-label") }}
-                {% if form.analysis_keywords_theshold.errors %}
-                    {{ form.analysis_keywords_theshold(class="form-control form-control-lg is-invalid") }}
+                {{ form.analysis_threshold.label(class="form-control-label") }}
+                {% if form.analysis_threshold.errors %}
+                    {{ form.analysis_threshold(class="form-control form-control-lg is-invalid") }}
                     <div class="invalid-feedback">
-                        {% for error in form.analysis_keywords_theshold.errors %}
+                        {% for error in form.analysis_threshold.errors %}
                             <span>{{ error }}</span>
                         {% endfor %}
                     </div>
                 {% else %}
-                    {{ form.analysis_keywords_theshold(class="form-control form-control-lg") }}
+                    {{ form.analysis_threshold(class="form-control form-control-lg") }}
                 {% endif %}
             </div>                                 
         </fieldset>

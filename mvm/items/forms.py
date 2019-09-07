@@ -14,5 +14,5 @@ class CreateItemForm(FlaskForm):
     analysis_targets = BooleanField(lazy_gettext('analysis of targets'))
     analysis_text = BooleanField(lazy_gettext('analysis of text'))
     analysis_labels = BooleanField(lazy_gettext('analysis of labels'))
-    analysis_keywords_theshold = IntegerField(lazy_gettext('threshold for keyword analysis'), validators=[DataRequired(), NumberRange(min=0, max=100)])
+    analysis_threshold = IntegerField(lazy_gettext('threshold for analysis'), validators=[DataRequired(), NumberRange(min=0, max=100)])
     submit = SubmitField(lazy_gettext('Upload'))
