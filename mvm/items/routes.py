@@ -25,7 +25,7 @@ def unsafe_content_detection(item):
                        labeltext = label['ParentName'] + " - " + label['Name']     
                        keyword = Keyword.query.filter_by(keywordtextname = labeltext).first()
                        if keyword is None:
-                           keyword = Keyword(keywordtextname = labeltext)
+                           keyword = Keyword(keywordtextname = labeltext, label=True)
                            db.session.add(keyword)
                        itemkeyword = ItemKeyword(reference = keyword, itemin = item)
                        db.session.add(itemkeyword)
@@ -108,9 +108,6 @@ def detectposition(positionx, positiony, comparewidth, compareheight, comparelef
     y1c = comparetop
     x2c = compareleft + comparewidth
     y2c = comparetop + compareheight
-    #print(round(x1, 2), round(y1, 2), round(x2, 2), round(y2, 2), round(x1c, 2), round(y1c, 2), round(x2c, 2), round(y2c, 2))
-#    print((((x1 <= x1c) and (x2 >= x1c)) or ((x1 <= x2c) and (x2 >= x2c))) and \
-#           (((y1 <= y1c) and (y2 >= y1c)) or ((y1 <= y2c) and (y2 >= y2c))))
     return (((x1 <= x1c) and (x2 >= x1c)) or ((x1 <= x2c) and (x2 >= x1c))) and \
            (((y1 <= y1c) and (y2 >= y1c)) or ((y1 <= y2c) and (y2 >= y1c)))
 

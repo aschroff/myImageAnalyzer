@@ -67,6 +67,7 @@ class ItemKeyword(db.Model):
 class Keyword(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     keywordtextname = db.Column(db.String(100), nullable=False)
+    label = db.Column(db.Boolean, nullable=False, default=False)
     date_create = db.Column(db.DateTime, nullable=False, default=datetime.utcnow) 
     itemkeywords = db.relationship('ItemKeyword', backref='reference', lazy=True)
     def __repr__(self):

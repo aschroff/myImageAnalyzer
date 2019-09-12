@@ -5,13 +5,31 @@
 
                 <a href="{{ url_for('items.item', item_id=item.id) }}">
                 <div class="card border-0 mb-0" style="width: 10rem;">                                
-                  <img class="card-img-top" src="{{ url_for('static', filename='images/thumbnails/' + item.thumbnail) }}">
+
+                  {% if texts[item.id]["foundlabel"] %}
+                      <img class="card-img-top" src="{{ url_for('static', filename='images/thumbnails/labelthumbnail.jpg') }}">
+                      <div class="card-img-overlay px-2">
+                          <p class="card-subtitle mb-0 text-danger"><img class="card-img-top" style="width:15px;height:15px;"  src="{{ url_for('static', filename='images/icons/Label.jpg') }}"><small>{{ texts[item.id]["line4"] }}</small></p>
+                      </div>
+                  {% else %}
+                    <img class="card-img-top" src="{{ url_for('static', filename='images/thumbnails/' + item.thumbnail) }}">
+                  {% endif %}
                   <div class="card-body px-0 pt-1">
                     <h6 class="card-title mb-0">{{ item.itemname}}</h6>
-                    <p class="card-subtitle mb-0 text-muted"><small>{{ item.owner.username}} {{ item.date_posted.strftime('%d-%m-%y') }}</small></p>
-                        <p class="card-subtitle mb-0"><small>Person, Human, ...</small></p>
-                        <p class="card-subtitle mb-0"><img class="card-img-top" style="width:8px;height:8px;"  src="{{ url_for('static', filename='images/icons/Target.jpg') }}"><img class="card-img-top" style="width:8px;height:8px;"  src="{{ url_for('static', filename='images/icons/VIP.jpg') }}"><small>Anna, Kim Kardashian,...</small></p>
-                        <p class="card-subtitle mb-0"><img class="card-img-top" style="width:8px;height:8px;"  src="{{ url_for('static', filename='images/icons/Text.jpg') }}"><small>Dieser Text ist auf</small></p>
+                    <p class="card-subtitle mb-0 text-muted"><small>{{ item.owner.username}} {{ item.date_posted.strftime('%d-%m-%y') }}</small></p>                    
+                        {% if texts[item.id]["foundkeywords"] %}
+                            <p class="card-subtitle mb-0"><img class="card-img-top" style="width:8px;height:8px;"  src="{{ url_for('static', filename='images/icons/Keyword.jpg') }}"><small>{{ texts[item.id]["line1"] }}</small></p>
+                        {%endif%}
+                        {% if texts[item.id]["foundcelebrities"] and texts[item.id]["foundtargets"] %}
+                            <p class="card-subtitle mb-0"><img class="card-img-top" style="width:8px;height:8px;"  src="{{ url_for('static', filename='images/icons/Target.jpg') }}"><img class="card-img-top" style="width:8px;height:8px;"  src="{{ url_for('static', filename='images/icons/VIP.jpg') }}"><small>{{ texts[item.id]["line2"] }}</small></p>
+                        {% elif texts[item.id]["foundcelebrities"] %}    
+                            <p class="card-subtitle mb-0"><img class="card-img-top" style="width:8px;height:8px;"  src="{{ url_for('static', filename='images/icons/VIP.jpg') }}"><small>{{ texts[item.id]["line2"] }}</small></p>
+                        {% elif texts[item.id]["foundtargets"] %}    
+                            <p class="card-subtitle mb-0"><img class="card-img-top" style="width:8px;height:8px;"  src="{{ url_for('static', filename='images/icons/Target.jpg') }}"><small>{{ texts[item.id]["line2"] }}</small></p>
+                        {%endif%}
+                        {% if texts[item.id]["foundtext"] %}
+                            <p class="card-subtitle mb-0"><img class="card-img-top" style="width:8px;height:8px;"  src="{{ url_for('static', filename='images/icons/Text.jpg') }}"><small>{{ texts[item.id]["line3"] }}</small></p>
+                        {%endif%}
                   </div>
                 </div>
                 </a>
