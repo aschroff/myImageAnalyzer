@@ -1,6 +1,6 @@
 import os
 import secrets
-from PIL import Image
+from PIL import Image, ImageOps
 from flask import current_app
 
 
@@ -9,10 +9,11 @@ def save_thumbnail(form_picture):
     _, f_ext = os.path.splitext(form_picture.filename)
     picturefilename = random_hex + f_ext
     picturepath = os.path.join(current_app.root_path, 'static/images/thumbnails', picturefilename)
-    outputsize = (125, 125)
+    outputsize = (250, 166)
     i = Image.open(form_picture)
     i.thumbnail(outputsize)
-    i.save(picturepath)
+    j = ImageOps.fit(image=i, size=outputsize, bleed=0.05)
+    j.save(picturepath)
     return picturefilename
 
 def save_item(form_picture):

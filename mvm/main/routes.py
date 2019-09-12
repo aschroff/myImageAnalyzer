@@ -10,7 +10,7 @@ main = Blueprint('main', __name__)
 @main.route("/home")
 def home():
     page = request.args.get('page', 1, type=int)
-    items = Item.query.order_by(Item.date_posted.desc()).paginate(page=page, per_page=4)
+    items = Item.query.order_by(Item.date_posted.desc()).paginate(page=page, per_page=12)
     itemsall = Item.query.order_by(Item.date_posted.desc()).all()
     searchform = SearchItemForm()
     return render_template('home.html', items=items, itemsall=itemsall, searchform=searchform)
