@@ -5,7 +5,7 @@ from flask import render_template, url_for, flash, redirect, request, abort
 from flask_login import current_user, login_required
 from flask_babel import gettext
 from mvm import db, rekognition
-from mvm.items.forms import CreateItemForm
+from mvm.items.forms import CreateItemForm, MultipleItemForm
 from mvm.models import User, Item, ItemKeyword, Keyword, Attribute, Person, PersonAttribute, Celebrity
 from mvm.items.utils import save_item, save_thumbnail, get_image_from_file
 from mvm.analytics.forms import SearchItemForm
@@ -155,7 +155,7 @@ def celebrity_recognition(item):
                                 print('not found' + str(celebrityresult))                   
 
 def face_comparison(item):    
-           if item.analysis_persons and item.analysis_targets :
+           if item.analysis_persons and item.analysis_targets and (Person.query.filter_by(itemin=item).count() > 0) :
                imgbytes = get_image_from_file(item.item_file) 
                print(item.itemname)
                for target in current_user.targets:
@@ -240,6 +240,47 @@ def new_item():
     form.analysis_threshold.data = 90
     searchform = SearchItemForm()
     return render_template('create_item.html', title='New Item', form=form, legend=gettext('New Item'), itemsall=itemsall, searchform=searchform)
+
+@items.route("/items/new", methods=['GET', 'POST'])
+@login_required
+def new_multipleitem():
+    form = MultipleItemForm()
+    if form.validate_on_submit():  
+        pics = request.files.getlist(form.item_files.name)
+        if pics:            
+           for pic in pics:
+               filename = pic.filename
+               itemfile = save_item(pic) 
+               thumbnailfile = save_thumbnail(pic)                    
+               itemname = form.itemname.data + " - " + filename
+               if len(itemname)>35:
+                   itemname=itemname[0:32] + "..."
+               item = Item(item_file = itemfile, itemname = itemname, thumbnail = thumbnailfile,
+                           owner = current_user,  analysis_keywords=form.analysis_keywords.data, 
+                           analysis_persons = form.analysis_persons.data, analysis_celebs = form.analysis_celebs.data,
+                           analysis_targets = form.analysis_targets.data, analysis_text = form.analysis_text.data, analysis_labels = form.analysis_labels.data,
+                           analysis_threshold = form.analysis_threshold.data)
+               db.session.add(item)
+               db.session.commit()           
+               # Object and scene detection - Keywords
+               object_and_scene_detection(item = item)             
+               # Facial analysis - Persons
+               facial_analysis(item = item) 
+               # Celebrity recognition        
+               celebrity_recognition(item = item)  
+               # Face comparision
+               face_comparison(item=item)
+               # Test in item
+               text_detection(item=item)
+               # Image moderation
+               unsafe_content_detection(item = item)  
+           flash(gettext('Your new items have been created'), 'success') 
+           return redirect(url_for('main.home'))  
+    itemsall = Item.query.order_by(Item.date_posted.desc()).all()  
+    form.analysis_keywords.data = True
+    form.analysis_threshold.data = 90
+    searchform = SearchItemForm()
+    return render_template('multiple_item.html', title='New Items', form=form, legend=gettext('New Items'), itemsall=itemsall, searchform=searchform)
 
 @items.route("/item/<int:item_id>")
 def item(item_id):

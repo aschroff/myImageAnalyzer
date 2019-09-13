@@ -1,0 +1,127 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="content-section">
+    <form method="POST" action="" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
+        <fieldset class="form-group">
+            <legend class="border-bottom mb-4">{{ legend }}</legend>
+            <div class="form-group">
+                {{ form.item_files.label() }}
+                {{ form.item_files(class="form-control-file") }}
+                {% if form.item_files.errors %}
+                    {% for error in form.item_files.errors %}
+                        <span class="text-danger">{{ error }}</span></br>                        
+                    {% endfor %}
+                {% endif %}
+            </div>    
+            <div class="form-group">
+                {{ form.itemname.label(class="form-control-label") }}
+                {% if form.itemname.errors %}
+                    {{ form.itemname(class="form-control form-control-lg is-invalid") }}
+                    <div class="invalid-feedback">
+                        {% for error in form.itemname.errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    {{ form.itemname(class="form-control form-control-lg") }}
+                {% endif %}
+            </div>
+            <div class="form-group">
+                {{ form.analysis_keywords.label(class="form-control-label") }}
+                {% if form.analysis_keywords.errors %}
+                    {{ form.analysis_keywords(class="form-control form-control-lg is-invalid") }}
+                    <div class="invalid-feedback">
+                        {% for error in form.analysis_keywords.errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    {{ form.analysis_keywords(class="checkbox") }}
+                {% endif %}
+            </div>
+            <div class="form-group">
+                {{ form.analysis_persons.label(class="form-control-label") }}
+                {% if form.analysis_persons.errors %}
+                    {{ form.analysis_persons(class="form-control form-control-lg is-invalid") }}
+                    <div class="invalid-feedback">
+                        {% for error in form.analysis_persons.errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    {{ form.analysis_persons(class="checkbox") }}
+                {% endif %}
+            </div>
+            <div class="form-group">
+                {{ form.analysis_celebs.label(class="form-control-label") }}
+                {% if form.analysis_celebs.errors %}
+                    {{ form.analysis_celebs(class="form-control form-control-lg is-invalid") }}
+                    <div class="invalid-feedback">
+                        {% for error in form.analysis_celebs.errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    {{ form.analysis_celebs(class="checkbox") }}
+                {% endif %}
+            </div>      
+            <div class="form-group">
+                {{ form.analysis_targets.label(class="form-control-label") }}
+                {% if form.analysis_targets.errors %}
+                    {{ form.analysis_targets(class="form-control form-control-lg is-invalid") }}
+                    <div class="invalid-feedback">
+                        {% for error in form.analysis_targets.errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    {{ form.analysis_targets(class="checkbox") }}
+                {% endif %}
+            </div>         
+            <div class="form-group">
+                {{ form.analysis_text.label(class="form-control-label") }}
+                {% if form.analysis_text.errors %}
+                    {{ form.analysis_text(class="form-control form-control-lg is-invalid") }}
+                    <div class="invalid-feedback">
+                        {% for error in form.analysis_text.errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    {{ form.analysis_text(class="checkbox") }}
+                {% endif %}
+            </div> 
+            <div class="form-group">
+                {{ form.analysis_labels.label(class="form-control-label") }}
+                {% if form.analysis_labels.errors %}
+                    {{ form.analysis_labels(class="form-control form-control-lg is-invalid") }}
+                    <div class="invalid-feedback">
+                        {% for error in form.analysis_labels.errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    {{ form.analysis_labels(class="checkbox") }}
+                {% endif %}
+            </div>    
+            <div class="form-group">
+                {{ form.analysis_threshold.label(class="form-control-label") }}
+                {% if form.analysis_threshold.errors %}
+                    {{ form.analysis_threshold(class="form-control form-control-lg is-invalid") }}
+                    <div class="invalid-feedback">
+                        {% for error in form.analysis_threshold.errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    {{ form.analysis_threshold(class="form-control form-control-lg") }}
+                {% endif %}
+            </div>                                 
+        </fieldset>
+        <div class="form-group">
+            {{ form.submit(class="btn btn-outline-info") }}
+        </div>
+    </form>
+</div>
+{% endblock content %}
