@@ -199,9 +199,10 @@ def text_detection(item):
                    if worddetected['Confidence'] >= item.analysis_threshold: 
                        textpiece = worddetected['DetectedText']
                        print(textpiece)
-                       newtext = str(item.text) + str(' ') + str(textpiece)
-                       if len(newtext) <= 1000:
-                           item.text = newtext
+                       if worddetected['Type']  == 'LINE':
+                           newtext = str(item.text) + str(' ') + str(textpiece)
+                           if len(newtext) <= 1000:
+                               item.text = newtext
            print(item.text)        
            db.session.commit() 
                    
