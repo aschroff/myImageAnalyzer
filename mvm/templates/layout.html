@@ -28,9 +28,16 @@
             <div class="navbar-nav mr-auto">
               <a class="nav-item nav-link" href="{{ url_for('main.home') }}">{{ _('Home') }}</a>
               <a class="nav-item nav-link" href="{{ url_for('main.about') }}">{{ _('About') }}</a>
-              <a class="nav-item nav-link" href="{{ url_for('analytics.keywords') }}">{{ _('Keywords') }}</a>
-              <a class="nav-item nav-link" href="{{ url_for('analytics.attributes') }}">{{ _('Attributes') }}</a>
-              <a class="nav-item nav-link" href="{{ url_for('analytics.celebrities') }}">{{ _('Celebrities') }}</a>
+              <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" id="navbardrop" data-toggle="dropdown">
+                {{ _('Top lists') }}
+              </a>
+              <div class="dropdown-menu">
+                  <a class="dropdown-item" href="{{ url_for('analytics.keywords') }}">{{ _('Keywords') }}</a>
+                  <a class="dropdown-item" href="{{ url_for('analytics.attributes') }}">{{ _('Attributes') }}</a>
+                  <a class="dropdown-item" href="{{ url_for('analytics.celebrities') }}">{{ _('Celebrities') }}</a>
+              </div>
+              </li>
             </div>
             <form method="POST" action="{{ url_for('analytics.search') }}" enctype="multipart/form-data">
                 {{ searchform.hidden_tag() }}

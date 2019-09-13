@@ -123,18 +123,5 @@
             {{ form.submit(class="btn btn-outline-info") }}
         </div>
     </form>
-    {% if itemkeywords is defined %}
-        {% if itemkeywords | count > 0 %}
-              <div class="col-md-6">            
-                <p class='text-muted'>{{ _('Keywords') }}
-                  <ul class="list-group">
-                    {% for itemkeyword in itemkeywords %}     
-                        <a class="list-group-item list-group-item-action" href="{{ url_for('analytics.keyword_items', keywordtextname=itemkeyword.reference.keywordtextname) }}">{{ itemkeyword.reference.keywordtextname }} </a>             
-                    {% endfor %} 
-                  </ul>
-                </p>
-            </div>
-        {% endif %} 
-    {% endif %} 
 </div>
 {% endblock content %}

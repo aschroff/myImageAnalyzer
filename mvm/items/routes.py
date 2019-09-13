@@ -9,6 +9,7 @@ from mvm.items.forms import CreateItemForm
 from mvm.models import User, Item, ItemKeyword, Keyword, Attribute, Person, PersonAttribute, Celebrity
 from mvm.items.utils import save_item, save_thumbnail, get_image_from_file
 from mvm.analytics.forms import SearchItemForm
+from mvm.main.routes import create_texts
 
 steps = 10
 items = Blueprint('items', __name__)
@@ -302,9 +303,14 @@ def update_item(item_id):
         form.analysis_threshold.data = item.analysis_threshold
     itemsall = Item.query.order_by(Item.date_posted.desc()).all()
     itemkeywords = ItemKeyword.query.filter_by(itemin=item).all()
+    persons = Person.query.filter_by(itemin=item)
+    attributes = {}
+    for person in persons:
+        personattributes = PersonAttribute.query.filter_by(referenceperson=person).all()
+        attributes[person.id] = personattributes   
     searchform = SearchItemForm()
     return render_template('create_item.html', title="Update Item",
-                           form=form, legend=gettext('Update Item'), item=item, itemsall=itemsall, itemkeywords=itemkeywords, searchform=searchform)  
+                           form=form, legend=gettext('Update Item'), item=item, itemsall=itemsall, itemkeywords=itemkeywords, persons = persons, searchform=searchform)  
     
 @items.route("/item/<int:item_id>/delete", methods=['POST'])
 @login_required
@@ -323,10 +329,14 @@ def delete(item_id):
 def user_items(username):
     page = request.args.get('page', 1, type=int)
     user = User.query.filter_by(username=username).first_or_404()
-    items = Item.query.filter_by(owner=user).order_by(Item.date_posted.desc()).paginate(page=page, per_page=4)
+    items = Item.query.filter_by(owner=user).order_by(Item.date_posted.desc()).paginate(page=page, per_page=12)
+    texts={}  
+    for item in items.items:
+        line1, line2, line3, line4, foundkeywords, foundtargets, foundcelebrities, foundtext, foundlabel, entry = create_texts(item)
+        texts[item.id]=entry
     itemsall = Item.query.order_by(Item.date_posted.desc()).all()
     searchform = SearchItemForm()    
-    return render_template('user_items.html', items=items, user=user, itemsall=itemsall, searchform=searchform)
+    return render_template('user_items.html', items=items, user=user, itemsall=itemsall, texts=texts, searchform=searchform)
 
 
     

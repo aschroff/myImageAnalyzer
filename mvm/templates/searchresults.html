@@ -22,35 +22,51 @@
       </div>
     </div>
 </form>
-<h1 class="mb-3">{{ _('Results') }} ({{ itemresults.total }})</h1>
-    {% for item in itemresults.items %}
-        <article class="media content-section">
-          <img class="rounded-circle article-img" src="{{ url_for('static', filename='images/profile_pics/' + item.owner.image_file) }}">
-          <div class="media-body">
-            <div class="article-metadata">
-              <a class="mr-2" href="{{ url_for('items.item', item_id=item.id) }}">{{ item.itemname}}</a><br>
-              <a class="mr-2" href="{{ url_for('items.user_items', username=item.owner.username) }}">{{ item.owner.username}}</a>
-              <small class="text-muted">{{ item.date_posted.strftime('%d-%m-%y') }}</small>
-            </div>
-          </div>
-          <img class="rounded-circle account-img" src="{{ url_for('static', filename='images/thumbnails/' + item.thumbnail) }}">
-        </article>
+<h1 class="mb-3">{{ _('Results') }} ({{ items.total }})</h1>
+    <div class="card-deck">   
+    {% for item in items.items %}
+
+                <a href="{{ url_for('items.item', item_id=item.id) }}">
+                <div class="card border-0 mb-0" style="width: 10rem;">                                
+
+                  {% if texts[item.id]["foundlabel"] %}
+                      <img class="card-img-top" src="{{ url_for('static', filename='images/thumbnails/labelthumbnail.jpg') }}">
+                      <div class="card-img-overlay px-2">
+                          <p class="card-subtitle mb-0 text-danger"><img class="card-img-top" style="width:15px;height:15px;"  src="{{ url_for('static', filename='images/icons/Label.jpg') }}"><small>{{ texts[item.id]["line4"] }}</small></p>
+                      </div>
+                  {% else %}
+                    <img class="card-img-top" src="{{ url_for('static', filename='images/thumbnails/' + item.thumbnail) }}">
+                  {% endif %}
+                  <div class="card-body px-0 pt-1">
+                    <h6 class="card-title mb-0">{{ item.itemname}}</h6>
+                    <p class="card-subtitle mb-0 text-muted"><small>{{ item.owner.username}} {{ item.date_posted.strftime('%d-%m-%y') }}</small></p>                    
+                        {% if texts[item.id]["foundkeywords"] %}
+                            <p class="card-subtitle mb-0"><img class="card-img-top" style="width:8px;height:8px;"  src="{{ url_for('static', filename='images/icons/Keyword.jpg') }}"><small>{{ texts[item.id]["line1"] }}</small></p>
+                        {%endif%}
+                        {% if texts[item.id]["foundcelebrities"] and texts[item.id]["foundtargets"] %}
+                            <p class="card-subtitle mb-0"><img class="card-img-top" style="width:8px;height:8px;"  src="{{ url_for('static', filename='images/icons/Target.jpg') }}"><img class="card-img-top" style="width:8px;height:8px;"  src="{{ url_for('static', filename='images/icons/VIP.jpg') }}"><small>{{ texts[item.id]["line2"] }}</small></p>
+                        {% elif texts[item.id]["foundcelebrities"] %}    
+                            <p class="card-subtitle mb-0"><img class="card-img-top" style="width:8px;height:8px;"  src="{{ url_for('static', filename='images/icons/VIP.jpg') }}"><small>{{ texts[item.id]["line2"] }}</small></p>
+                        {% elif texts[item.id]["foundtargets"] %}    
+                            <p class="card-subtitle mb-0"><img class="card-img-top" style="width:8px;height:8px;"  src="{{ url_for('static', filename='images/icons/Target.jpg') }}"><small>{{ texts[item.id]["line2"] }}</small></p>
+                        {%endif%}
+                        {% if texts[item.id]["foundtext"] %}
+                            <p class="card-subtitle mb-0"><img class="card-img-top" style="width:8px;height:8px;"  src="{{ url_for('static', filename='images/icons/Text.jpg') }}"><small>{{ texts[item.id]["line3"] }}</small></p>
+                        {%endif%}
+                  </div>
+                </div>
+                </a>
     {% endfor %}
-    {% set search_keywords = filterform.search_keywords.data %}
-    {% set search_attributes = filterform.search_attributes.data %}
-    {% set search_celebs = filterform.search_celebs.data %}
-    {% set search_text = filterform.search_text.data %}
-    {% set search_age = filterform.search_age.data %}
-    {% set search_targets = filterform.search_targets.data %}
-    {% for page_num in itemresults.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+   </div>
+    {% for page_num in items.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
         {% if page_num %}
-            {% if itemresults.page == page_num %}      
-                <a class="btn btn-info mb-4" href="{{ url_for('analytics.results', search_query = search_query, search_keywords=search_keywords, search_attributes = search_attributes, search_celebs = search_celebs, search_text = search_text, search_age=search_age, search_targets= search_targets, page = page_num)}}">{{ page_num }}</a>              
+            {% if items.page == page_num %}      
+                <a class="btn btn-info mb-4" href="{{ url_for('main.home', page=page_num)}}">{{ page_num }}</a>              
             {% else %}
-                <a class="btn btn-outline-info mb-4" href="{{ url_for('analytics.results', search_query = search_query, search_keywords=search_keywords, search_attributes = search_attributes, search_celebs = search_celebs, search_text = search_text, search_age=search_age, search_targets=search_targets, page = page_num)}}">{{ page_num }}</a>
+                <a class="btn btn-outline-info mb-4" href="{{ url_for('main.home', page=page_num)}}">{{ page_num }}</a>
             {% endif %}
         {% else %}
         ...
         {% endif %}
-    {% endfor %}        
+    {% endfor %}          
 {% endblock content %}

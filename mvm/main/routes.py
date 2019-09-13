@@ -50,37 +50,32 @@ def create_texts(item):
     
     if len(line1)>characterLine:
         line1=line1[0:characterLine-3] + "..."
-    print(line1)
     if len(line2)>characterLine:
         line2=line2[0:characterLine-3] + "..."
-    print(line2)
     if len(line3)>characterLine:
-        line3=line3[0:characterLine-3] + "..."
-    print(line3)   
+        line3=line3[0:characterLine-3] + "..."   
     if len(line4)>characterLine*3:
-        line4=line4[0:characterLine*3-3] + "..."
-    print(line4)  
-    return line1, line2, line3,  line4, foundkeywords, foundtargets, foundcelebrities, foundtext, foundlabel
+        line4=line4[0:characterLine*3-3] + "..." 
+    entry = {}
+    entry["line1"]=line1
+    entry["line2"]=line2
+    entry["line3"]=line3
+    entry["line4"]=line4
+    entry["foundkeywords"] = foundkeywords
+    entry["foundtargets"] = foundtargets
+    entry["foundcelebrities"] = foundcelebrities
+    entry["foundtext"] = foundtext
+    entry["foundlabel"] = foundlabel
+    return line1, line2, line3,  line4, foundkeywords, foundtargets, foundcelebrities, foundtext, foundlabel, entry
 
 @main.route("/")
 @main.route("/home")
 def home():
     page = request.args.get('page', 1, type=int)
     items = Item.query.order_by(Item.date_posted.desc()).paginate(page=page, per_page=12)
-    texts={}
-    
+    texts={}  
     for item in items.items:
-        line1, line2, line3, line4, foundkeywords, foundtargets, foundcelebrities, foundtext, foundlabel = create_texts(item)
-        entry = {}
-        entry["line1"]=line1
-        entry["line2"]=line2
-        entry["line3"]=line3
-        entry["line4"]=line4
-        entry["foundkeywords"] = foundkeywords
-        entry["foundtargets"] = foundtargets
-        entry["foundcelebrities"] = foundcelebrities
-        entry["foundtext"] = foundtext
-        entry["foundlabel"] = foundlabel
+        line1, line2, line3, line4, foundkeywords, foundtargets, foundcelebrities, foundtext, foundlabel, entry = create_texts(item)
         texts[item.id]=entry 
     itemsall = Item.query.order_by(Item.date_posted.desc()).all()
     searchform = SearchItemForm()

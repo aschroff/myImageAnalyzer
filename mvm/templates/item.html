@@ -1,61 +1,63 @@
 {% extends "layout.html" %}
 {% block content %}
-    <article class="media content-section">
-      <img class="rounded-circle article-img" src="{{ url_for('static', filename='images/profile_pics/' + item.owner.image_file) }}">
-      <div class="media-body">
-        <div class="article-metadata">
-          <a class="mr-2">{{ item.itemname}}</a><br>
-          <small class="text-muted" href="{{ url_for('items.user_items', username=item.owner.username) }}">{{ item.owner.username}}</small>
-          <small class="text-muted">{{ item.date_posted.strftime('%d-%m-%y') }}</small><br>
+    <div class="card-deck">  
 
-          {% if item.owner == current_user %}
-              <div>
-                  <a class="btn btn-secondary btn-sm mt-1 mb-1"  href="{{ url_for('items.update_item', item_id=item.id) }}">{{ _('Update') }}</a>
-                  <button type="Button" class="btn btn-danger btn-sm m1" data-toggle="modal" data-target="#deleteModal">{{ _('Delete') }}</button>
-              </div>
-          {% endif %}
-        </div>
+        <div class="card-body px-0 pt-1">
+              <h6 class="card-title mb-0">{{ item.itemname}}</h6>
+              <p class="card-subtitle mb-0 text-muted"><small>{{ item.owner.username}} {{ item.date_posted.strftime('%d-%m-%y') }}</small></p>
+              
+              {% if itemkeywords.count() > 0 %}
+                    <p class="card-subtitle mb-0"><img class="card-img-top" style="width:8px;height:8px;"  src="{{ url_for('static', filename='images/icons/Keyword.jpg') }}">
+                        <small>
+                            {% for itemkeyword in itemkeywords %} 
+                                {{ itemkeyword.reference.keywordtextname  }}
+                            {% endfor %}
+                        </small>
+                    </p>
+              {%endif%}       
+              {% if persons.count() > 0 %}
+                    {% set personnr = namespace(nr=1) %}
+                    {% for person in persons %}                      
+                        <p class="card-subtitle mb-0">
+                             <small>   
+                                 ({{ personnr.nr }})
+                                 {% if person.relatedcelebrity.name | length > 0 %}
+                                     <img class="card-img-top" style="width:8px;height:8px;"  src="{{ url_for('static', filename='images/icons/VIP.jpg') }}">
+                                     {{ person.relatedcelebrity.name }}        
+                                 {% endif%} 
+                                 {% if person.foundtargetimage is defined and person.foundtargetimage and person.foundtargetimage !="" %}
+                                     <img class="card-img-top" style="width:8px;height:8px;"  src="{{ url_for('static', filename='images/icons/Target.jpg') }}">
+                                     {{ person.foundtargetimage.imagefortarget.name }}
+                                     ({{ person.foundtargetimage.name }})        
+                                 {% endif%} 
+                                 <img class="card-subtitle mb-0"><img class="card-img-top" style="width:8px;height:8px;"  src="{{ url_for('static', filename='images/icons/Person.jpg') }}">
+                                 {% for personattribute in personattributes[person.id] %}     
+                                       {{ personattribute.referenceattribute.attributetextname }}            
+                                 {% endfor %}  
+                             </small>
+                         </p>
+                         {% set personnr.nr = personnr.nr + 1  %}                           
+                    {% endfor %}                   
+              {% endif %}
+              {% if item.text | length > 0 %}
+                  <p class="card-subtitle mb-0">
+                    <img class="card-img-top mb-0" style="width:8px;height:8px;"  src="{{ url_for('static', filename='images/icons/Text.jpg') }}">
+                    <small>{{ item.text}}</small>
+                  </p>  
+              {% endif %}
+              {% if item.owner == current_user %}
+                  <div>
+                      <a class="btn btn-secondary btn-sm mt-1 mb-1"  href="{{ url_for('items.update_item', item_id=item.id) }}">{{ _('Update') }}</a>
+                      <button type="Button" class="btn btn-danger btn-sm m1" data-toggle="modal" data-target="#deleteModal">{{ _('Delete') }}</button>
+                  </div>
+              {% endif %}
+    
+    
 
-        {% if itemkeywords.count() > 0 %}
-            <div class="col-md-6">
-                <p class='text-muted'>{{ _('Keywords') }}
-                  <ul class="list-group">
-                    {% for itemkeyword in itemkeywords %}     
-                        <a class="list-group-item list-group-item-action" href="{{ url_for('analytics.keyword_items', keywordtextname=itemkeyword.reference.keywordtextname) }}">{{ itemkeyword.reference.keywordtextname }} </a>             
-                    {% endfor %} 
-                  </ul>
-                </p>
-            </div>
-        {% endif %}
-        {% if persons.count() > 0 %}
-            <div class="col-md-6">
-                <p class='text-muted'>{{ _('Persons') }}
-                {% set personnr = namespace(nr=1) %}
-                {% for person in persons %}
-                     <br>
-                     <p class='text-muted'>{{ _('Person') }} {{ personnr.nr }}
-                     {% if person.relatedcelebrity.name | length > 0 %}
-                         <p class='text-muted'>{{ _('Celebrity') }} {{ person.relatedcelebrity.name }}        
-                     {% endif%}            
-                     {% if person.foundtargetimage is defined and person.foundtargetimage and person.foundtargetimage !="" %}
-                         <p class='text-muted'>{{ _('Target') }} {{ person.foundtargetimage.imagefortarget.name }} - {{ person.foundtargetimage.name }}        
-                     {% endif%}
-                     <ul class="list-group">                
-                        {% for personattribute in personattributes[person.id] %}     
-                            <a class="list-group-item list-group-item-action" >{{ personattribute.referenceattribute.attributetextname }} </a>             
-                        {% endfor %}    
-                     </ul>
-                     {% set personnr.nr = personnr.nr + 1  %}
-                {% endfor %}                   
-                </p>
-            </div>
-        {% endif %}
-        {% if item.analysis_text %}
-                <a class="mr-2">{{ _('Text found') }}: {{ item.text}}</a><br>
-        {% endif %}
-      </div>
-      <img class="rounded-circle account-img" src="{{ url_for('static', filename='images/thumbnails/' + item.thumbnail) }}"><br>
-    </article>
+
+        </div> <!-- card body -->  
+        <img class="card-img-bottom" src="{{ url_for('static', filename='images/items/' + item.item_file) }}">
+    </div> <!-- card -->
     <!-- Modal -->
     <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="{{ _('Delete Item?') }}" aria-hidden="true">
       <div class="modal-dialog" role="document">

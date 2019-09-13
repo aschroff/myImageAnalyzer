@@ -5,9 +5,9 @@ from flask_babel import gettext
 from mvm.analytics.forms import CreateTargetForm, CreateTargetImageForm, SearchItemForm, FilterItemForm
 from mvm.models import User, Item, ItemKeyword, Keyword, Person, Attribute, PersonAttribute, Celebrity, Target, Targetimage
 from mvm.items.utils import save_item, save_thumbnail, get_image_from_file
+from mvm.main.routes import create_texts
 from sqlalchemy import func 
 from mvm import db
-from sqlalchemy.sql import union
 
 
 analytics = Blueprint('analytics', __name__)
@@ -27,9 +27,15 @@ def keywords():
 def keyword_items(keywordtextname):
     page = request.args.get('page', 1, type=int)
     keyword = Keyword.query.filter_by(keywordtextname=keywordtextname).first_or_404()    
-    item_keywords = ItemKeyword.query.filter_by(reference=keyword).order_by(ItemKeyword.date_analysis.desc()).paginate(page=page, per_page=4)
+    item_keywords = ItemKeyword.query.filter_by(reference=keyword).order_by(ItemKeyword.date_analysis.desc()).paginate(page=page, per_page=12)
+    texts={}  
+    for item_keyword in item_keywords.items:
+        item = item_keyword.itemin
+        line1, line2, line3, line4, foundkeywords, foundtargets, foundcelebrities, foundtext, foundlabel, entry = create_texts(item)
+        texts[item.id]=entry 
     itemsall = Item.query.order_by(Item.date_posted.desc()).all()
-    return render_template('keyword_items.html', item_keywords=item_keywords, keyword=keyword, itemsall=itemsall)
+    searchform = SearchItemForm()
+    return render_template('keyword_items.html', item_keywords=item_keywords, keyword=keyword, itemsall=itemsall, texts=texts, searchform=searchform)
 
 @analytics.route("/attributes")
 def attributes():
@@ -44,10 +50,14 @@ def attributes():
 def attribute_items(attributetextname):
     page = request.args.get('page', 1, type=int)
     attribute = Attribute.query.filter_by(attributetextname=attributetextname).first_or_404()    
-    attributeitems = Item.query.join(Person).join(PersonAttribute).filter_by(attribute_id = attribute.id).distinct().paginate(page=page, per_page=4)
+    attributeitems = Item.query.join(Person).join(PersonAttribute).filter_by(attribute_id = attribute.id).distinct().paginate(page=page, per_page=12)
+    texts={}  
+    for item in attributeitems.items:
+        line1, line2, line3, line4, foundkeywords, foundtargets, foundcelebrities, foundtext, foundlabel, entry = create_texts(item)
+        texts[item.id]=entry 
     itemsall = Item.query.order_by(Item.date_posted.desc()).all()
     searchform = SearchItemForm()    
-    return render_template('attribute_items.html', attributeitems=attributeitems, attribute=attribute, itemsall=itemsall, searchform=searchform)
+    return render_template('attribute_items.html', items=attributeitems, attribute=attribute, itemsall=itemsall, texts=texts, searchform=searchform)
 
 @analytics.route("/celebrities")
 def celebrities():
@@ -62,10 +72,14 @@ def celebrities():
 def celebrity_items(aws_id):
     page = request.args.get('page', 1, type=int)
     celebrity = Celebrity.query.filter_by(aws_id=aws_id).first_or_404()    
-    celebrityitems = Item.query.join(Person).filter_by(celebrity_id = celebrity.id).distinct().paginate(page=page, per_page=4)
+    celebrityitems = Item.query.join(Person).filter_by(celebrity_id = celebrity.id).distinct().paginate(page=page, per_page=12)
+    texts={}  
+    for item in celebrityitems.items:
+        line1, line2, line3, line4, foundkeywords, foundtargets, foundcelebrities, foundtext, foundlabel, entry = create_texts(item)
+        texts[item.id]=entry 
     itemsall = Item.query.order_by(Item.date_posted.desc()).all()
     searchform = SearchItemForm()    
-    return render_template('celebrity_items.html', celebrityitems=celebrityitems, celebrity=celebrity, itemsall=itemsall, searchform=searchform)
+    return render_template('celebrity_items.html', items=celebrityitems, celebrity=celebrity, itemsall=itemsall, texts=texts, searchform=searchform)
 
 @analytics.route("/target/new", methods=['GET', 'POST'])
 @login_required
@@ -231,7 +245,12 @@ def results(search_query):
     if request.args.get('search_targets'):
         itemscollect = itemscollect.join(Person).join(Targetimage).join(Target).filter_by(id=request.args.get('search_targets'))
 
-    items = itemscollect.distinct().paginate(page=page, per_page=4)    
+    items = itemscollect.distinct().paginate(page=page, per_page=8)
+    texts={}  
+    for item in items.items:
+        line1, line2, line3, line4, foundkeywords, foundtargets, foundcelebrities, foundtext, foundlabel, entry = create_texts(item)
+        texts[item.id]=entry  
+    
     itemsall = Item.query.order_by(Item.date_posted.desc()).all()  
     formsearch = SearchItemForm()
     formfilter = FilterItemForm()
@@ -256,23 +275,6 @@ def results(search_query):
             #        formfilter.searchtexthidden.data = request.args.get('searchtexthidden')
         print('Ja')
     print(formfilter.search_targets)    
-    return render_template('searchresults.html', title='Search', legend=gettext('Item search'), searchform = formsearch, filterform = formfilter, itemresults = items, itemsall=itemsall, search_query = search_query)
-
-#    
-#    choices = Target.query.filter_by(searcher = current_user)
-#    form.search_targets.query = choices
-#    page = request.args.get('page', 1, type=int)
-#    print(request.args)
-#    print(request.form)
-#    if form.validate_on_submit():  
-#        print('fall1')
-#        searchtext = form.searchtext.data
-#    else:
-#        print('fall2')
-#        searchtext = str('')    
-##        if form.searchtext.data:   
-#    print('3') 
-#    print(page) 
-#    items = Item.query.join(ItemKeyword).join(Keyword).filter(Keyword.keywordtextname.contains(searchtext)).distinct().paginate(page=page, per_page=4) 
-#    itemsall = Item.query.order_by(Item.date_posted.desc()).all()  
-#     return render_template('search.html', form=form, title='Search', legend=gettext('Item search'), itemresults = items, itemsall=itemsall)      
+    
+    return render_template('searchresults.html', title='Search', legend=gettext('Item search'), searchform = formsearch, filterform = formfilter, items = items, itemsall=itemsall, texts=texts, search_query = search_query)
+     
