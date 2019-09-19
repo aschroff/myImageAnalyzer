@@ -1,5 +1,34 @@
 {% extends "layout.html" %}
 {% block content %}
+{% block additional_javascripts %}
+<script> 
+    function getProgress() {
+  
+            var source = new EventSource("/progress"); 
+                       
+            source.addEventListener('import-progress', function(event)
+                {
+                    $('.progress-bar')
+                        .css('width', event.data + '%')
+                        .attr('aria-valuenow', event.data);
+                    $('.progress-bar-label').text(event.data + '%');    
+                }, false
+            );
+    
+    		source.addEventListener("/home", function(event)
+    	       {
+    			 source.close();
+    			 redirect(event.data);
+    		   }, false
+            );
+    }    
+      
+    function redirect(url) {
+      document.location = url;
+    }
+</script>
+
+{% endblock %}
 <div class="content-section">
     <form method="POST" action="" enctype="multipart/form-data">
         {{ form.hidden_tag() }}
@@ -120,8 +149,14 @@
             </div>                                 
         </fieldset>
         <div class="form-group">
-            {{ form.submit(class="btn btn-outline-info") }}
+            {{ form.submit(class="btn btn-outline-info", onclick="getProgress()") }}
         </div>
     </form>
+     <div class="progress" style="width: 80%; margin: 50px;">
+        <div class="progress-bar progress-bar-striped active"
+          role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%">
+          <span class="progress-bar-label">0%</span>
+        </div>
+      </div>
 </div>
 {% endblock content %}

@@ -1,7 +1,7 @@
 from datetime import datetime
 import random 
-from flask import Blueprint
-from flask import render_template, url_for, flash, redirect, request, abort
+from flask import Blueprint, current_app
+from flask import render_template, url_for, flash, redirect, request, abort, session, Response
 from flask_login import current_user, login_required
 from flask_babel import gettext
 from mvm import db, rekognition
@@ -10,6 +10,9 @@ from mvm.models import User, Item, ItemKeyword, Keyword, Attribute, Person, Pers
 from mvm.items.utils import save_item, save_thumbnail, get_image_from_file
 from mvm.analytics.forms import SearchItemForm
 from mvm.main.routes import create_texts
+import time
+from flask import stream_with_context
+
 
 steps = 10
 items = Blueprint('items', __name__)
@@ -18,10 +21,7 @@ def unsafe_content_detection(item):
        if item.analysis_labels:
            imgbytes = get_image_from_file(item.item_file)
            rekres = rekognition.detect_moderation_labels(Image={'Bytes': imgbytes}, MinConfidence=item.analysis_threshold)
-           print(rekres)
            for label in rekres['ModerationLabels']:
-                   print(len(label['ParentName']))
-                   print(label['ParentName'])
                    if len(label['ParentName']) > 0:
                        labeltext = label['ParentName'] + " - " + label['Name']     
                        keyword = Keyword.query.filter_by(keywordtextname = labeltext).first()
@@ -75,13 +75,13 @@ def facial_analysis(item):
                                         personattribute =  PersonAttribute(referenceperson = person, referenceattribute = attribute)  
                                         db.session.add(personattribute)                                       
                            elif attributename == 'Landmarks':                                   
-                               print()
+                              i = 1
                            elif attributename == 'Pose':    
-                               print()                               
+                               i = 1                               
                            elif attributename == 'Quality':     
-                               print()                               
+                              i = 1                               
                            elif attributename == 'Confidence':
-                               print()  
+                               i = 1  
                            elif attributename == 'Gender':
                                attributenamegender = personresult[attributename]['Value']
                                attribute = Attribute.query.filter_by(attributetextname = attributenamegender).first()      
@@ -125,22 +125,16 @@ def celebrity_recognition(item):
            if item.analysis_persons and item.analysis_celebs:
                imgbytes = get_image_from_file(item.item_file)
                rekres = rekognition.recognize_celebrities(Image={'Bytes': imgbytes})
-               print('celebrity_recognition')
                for celebrityresult in rekres['CelebrityFaces']:
-                       print('celebrityresult:' + str(celebrityresult))
                        if celebrityresult['MatchConfidence'] >= item.analysis_threshold: 
                            boundingbox = celebrityresult['Face']['BoundingBox']
                            maxoverlap = 0
                            for person in item.persons:
-                               print('person:' + str(person.id))
                                overlap = determineoverlap(compare = boundingbox, personidentified = person)
-                               print('overlap person:' + str(overlap))
                                if overlap > maxoverlap:
                                    maxoverlap = overlap
                                    personfit = person
-                                   print('New max:' + str(maxoverlap))
                            if maxoverlap > 0:
-                                print('found' + str(celebrityresult) + str(personfit.id))
                                 celebrity = Celebrity.query.filter_by(aws_id = celebrityresult['Id']).first()
                                 if celebrity is None:
                                     if len(celebrityresult['Urls']) > 0:
@@ -157,30 +151,23 @@ def celebrity_recognition(item):
 def face_comparison(item):    
            if item.analysis_persons and item.analysis_targets and (Person.query.filter_by(itemin=item).count() > 0) :
                imgbytes = get_image_from_file(item.item_file) 
-               print(item.itemname)
                for target in current_user.targets:
-                   print(target.name)
                    max_sim = 0
                    for targetimage in target.targetimages:
-                       print (targetimage.name)
                        imgbytescompare = get_image_from_file(targetimage.file)
                        rekres = rekognition.compare_faces(SimilarityThreshold=item.analysis_threshold, SourceImage={'Bytes': imgbytescompare}, TargetImage={'Bytes': imgbytes})
-                       print(rekres) 
                        if len(rekres['FaceMatches']) > 0:
                            sim = rekres['FaceMatches'][0]['Similarity']
-                           print(sim)
                            if sim >= item.analysis_threshold: 
                                if sim > max_sim: 
                                    boundingbox = rekres['FaceMatches'][0]['Face']['BoundingBox']
                                    maxoverlap = 0
                                    for person in item.persons:
                                        overlap = determineoverlap(compare = boundingbox, personidentified = person)
-                                       print('overlap person:' + str(overlap))
                                        if overlap > maxoverlap:
                                            maxoverlap = overlap
                                            max_sim = sim
                                            personfit = person
-                                           print('New max:' + str(maxoverlap))
                                    if maxoverlap > 0:
                                         personfit.foundtargetimage = targetimage
                                         db.session.commit()   
@@ -193,17 +180,14 @@ def text_detection(item):
            if item.analysis_text:
                imgbytes = get_image_from_file(item.item_file) 
                rekres = rekognition.detect_text(Image={'Bytes': imgbytes})
-               print(rekres)
                item.text = ''
                for worddetected in rekres['TextDetections']:
                    if worddetected['Confidence'] >= item.analysis_threshold: 
                        textpiece = worddetected['DetectedText']
-                       print(textpiece)
                        if worddetected['Type']  == 'LINE':
                            newtext = str(item.text) + str(' ') + str(textpiece)
                            if len(newtext) <= 1000:
-                               item.text = newtext
-           print(item.text)        
+                               item.text = newtext       
            db.session.commit() 
                    
 
@@ -246,9 +230,13 @@ def new_item():
 @login_required
 def new_multipleitem():
     form = MultipleItemForm()
+    
     if form.validate_on_submit():  
         pics = request.files.getlist(form.item_files.name)
         if pics:            
+           current_user.multipleupload = len(pics)
+           db.session.commit()
+           print('--------------------------------------------cumu'+ str(current_user.multipleupload))
            for pic in pics:
                filename = pic.filename
                itemfile = save_item(pic) 
@@ -380,5 +368,42 @@ def user_items(username):
     searchform = SearchItemForm()    
     return render_template('user_items.html', items=items, user=user, itemsall=itemsall, texts=texts, searchform=searchform)
 
-
+@items.route('/progress')
+def progress():
     
+    @stream_with_context
+    def import_progress():
+        time.sleep(0.5)
+        with current_app.app_context():
+            iteminital = Item.query.filter_by(owner=current_user).count() - 1
+            if current_user.multipleupload:
+                    itemstargetcount = current_user.multipleupload
+        continueloop = True
+        while continueloop:            
+            
+            with current_app.app_context():
+                itemcount = Item.query.filter_by(owner=current_user).count()                
+                
+            print('U----------itemcount' +str(itemcount))
+            print('U----------iteminital' +str(iteminital))
+            print('U----------itemstargetcount' +str(itemstargetcount))
+            percentage = round(100 * (itemcount-iteminital) / itemstargetcount)
+            print('U----------percentage' +str(percentage))    
+
+
+            sse_id = str(percentage)
+            sse_data = str(percentage)
+            sse_event = 'import-progress'
+    
+            if percentage == 100:
+                sse_event = 'last-item'
+                sse_data = '/home'
+    
+            yield "id:{_id}\nevent:{event}\ndata:{data}\n\n".format(
+                _id=sse_id, event=sse_event, data=sse_data)
+            time.sleep(2)
+            
+    return Response(import_progress(), mimetype='text/event-stream')
+
+
+        

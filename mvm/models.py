@@ -15,6 +15,7 @@ class User(db.Model, UserMixin):
     email = db.Column(db.String(120), unique=True, nullable=False)
     image_file = db.Column(db.String(20), nullable=False, default='default.jpg')
     password = db.Column(db.String(60), nullable=False)
+    multipleupload = db.Column(db.Integer, default=0)
     items = db.relationship('Item', backref='owner', lazy=True)
     targets = db.relationship('Target', backref='searcher', lazy=True)
 
