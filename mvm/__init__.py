@@ -4,7 +4,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager
 from flask_mail import Mail
-from mvm.config import Config
+from mvm.config import DevelopmentConfig
 from flask_babel import Babel
 from flask_migrate import Migrate
 import boto3
@@ -24,9 +24,9 @@ rekognition = boto3.client('rekognition', region_name='eu-central-1')
 
 
 
-def create_app(config_class=Config):
+def create_app(config_class=DevelopmentConfig):
     application = Flask(__name__)
-    application.config.from_object(Config)
+    application.config.from_object(config_class)
     
     mail.init_app(application)
     db.init_app(application)
