@@ -232,6 +232,10 @@ def results(search_query):
         itemscollect1 = Item.query.join(ItemKeyword).join(Keyword).filter(Keyword.keywordtextname.contains(search_query)).distinct()
         itemscollect2 = itemscollect1.union(itemscollect)
         itemscollect = itemscollect2
+        itemscollect1 = Item.query.join(Person).join(PersonAttribute).join(Attribute).filter(Attribute.attributetextname.contains(search_query)).distinct()
+        itemscollect2 = itemscollect1.union(itemscollect)
+        itemscollect = itemscollect2        
+        
 
     if request.args.get('search_celebs') == 'True':
         itemscollect1 = Item.query.join(Person).join(Celebrity).filter(Celebrity.name.contains(search_query)).distinct()

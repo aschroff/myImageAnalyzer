@@ -1,0 +1,291 @@
+# Translations template for PROJECT.
+# Copyright (C) 2019 ORGANIZATION
+# This file is distributed under the same license as the PROJECT project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2019.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2019-09-23 10:44+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.7.0\n"
+
+#: analytics/routes.py:93
+msgid "Your new target has been created"
+msgstr ""
+
+#: analytics/routes.py:97
+msgid "New Target"
+msgstr ""
+
+#: analytics/routes.py:109
+msgid "Your target has been updated"
+msgstr ""
+
+#: analytics/routes.py:116
+msgid "Update Target"
+msgstr ""
+
+#: analytics/routes.py:130
+msgid "Your new image has been created"
+msgstr ""
+
+#: analytics/routes.py:134
+msgid "New image for target"
+msgstr ""
+
+#: analytics/routes.py:150
+msgid "Your new image has been updated"
+msgstr ""
+
+#: analytics/routes.py:157
+msgid "Update image for target"
+msgstr ""
+
+#: analytics/routes.py:176
+msgid "Your Image has been deleted"
+msgstr ""
+
+#: analytics/routes.py:195
+msgid "Your target has been deleted"
+msgstr ""
+
+#: analytics/routes.py:283
+msgid "Item search"
+msgstr ""
+
+#: items/routes.py:221
+msgid "Your new item has been created"
+msgstr ""
+
+#: items/routes.py:227
+msgid "New Item"
+msgstr ""
+
+#: items/routes.py:266
+msgid "Your new items have been created"
+msgstr ""
+
+#: items/routes.py:272
+msgid "New Items"
+msgstr ""
+
+#: items/routes.py:322
+msgid "Your item has been updated"
+msgstr ""
+
+#: items/routes.py:343
+msgid "Update Item"
+msgstr ""
+
+#: items/routes.py:354
+msgid "Your item has been deleted"
+msgstr ""
+
+#: templates/account.html:14
+msgid "Account Info"
+msgstr ""
+
+#: templates/account.html:56
+msgid "Targets"
+msgstr ""
+
+#: templates/account.html:62
+msgid "No targets defined"
+msgstr ""
+
+#: templates/account.html:64 templates/create_target.html:43
+msgid "New"
+msgstr ""
+
+#: templates/attributes.html:5 templates/celebrities.html:5
+msgid "Found for"
+msgstr ""
+
+#: templates/attributes.html:5 templates/celebrities.html:5
+msgid "persons"
+msgstr ""
+
+#: templates/create_target.html:25
+msgid "Images for target"
+msgstr ""
+
+#: templates/create_target.html:30
+msgid "Images"
+msgstr ""
+
+#: templates/create_target.html:40
+msgid "No images for this target defined"
+msgstr ""
+
+#: templates/item.html:50 templates/target.html:10
+#: templates/targetimage.html:11
+msgid "Update"
+msgstr ""
+
+#: templates/item.html:51 templates/item.html:74 templates/target.html:11
+#: templates/target.html:31 templates/targetimage.html:12
+#: templates/targetimage.html:32
+msgid "Delete"
+msgstr ""
+
+#: templates/item.html:62 templates/targetimage.html:20
+msgid "Delete Item?"
+msgstr ""
+
+#: templates/item.html:66 templates/targetimage.html:24
+msgid "Eintrag löschen"
+msgstr ""
+
+#: templates/item.html:72 templates/target.html:29
+#: templates/targetimage.html:30
+msgid "Cancel"
+msgstr ""
+
+#: templates/layout.html:29
+msgid "Home"
+msgstr ""
+
+#: templates/layout.html:30
+msgid "About"
+msgstr ""
+
+#: templates/layout.html:33
+msgid "Top lists"
+msgstr ""
+
+#: templates/layout.html:36
+msgid "Keywords"
+msgstr ""
+
+#: templates/layout.html:37
+msgid "Attributes"
+msgstr ""
+
+#: templates/layout.html:38
+msgid "Celebrities"
+msgstr ""
+
+#: templates/layout.html:54
+msgid "Account"
+msgstr ""
+
+#: templates/layout.html:57
+msgid "Create new"
+msgstr ""
+
+#: templates/layout.html:60
+msgid "Single new item"
+msgstr ""
+
+#: templates/layout.html:61
+msgid "Multiple new items"
+msgstr ""
+
+#: templates/layout.html:64
+msgid "Logout"
+msgstr ""
+
+#: templates/layout.html:66
+msgid "Login"
+msgstr ""
+
+#: templates/layout.html:67
+msgid "Register"
+msgstr ""
+
+#: templates/layout.html:93
+msgid "Our Sidebar"
+msgstr ""
+
+#: templates/layout.html:94
+msgid "Overview"
+msgstr ""
+
+#: templates/layout.html:98 templates/layout.html:102
+msgid "Latest Posts"
+msgstr ""
+
+#: templates/layout.html:99 templates/layout.html:103
+msgid "Statistics"
+msgstr ""
+
+#: templates/layout.html:99
+msgid "items"
+msgstr ""
+
+#: templates/login.html:7
+msgid "Log In"
+msgstr ""
+
+#: templates/login.html:43
+msgid "Forgot Password?"
+msgstr ""
+
+#: templates/login.html:49
+msgid "Need An Account?"
+msgstr ""
+
+#: templates/login.html:49
+msgid "Sign Up Now"
+msgstr ""
+
+#: templates/register.html:7
+msgid "Join"
+msgstr ""
+
+#: templates/register.html:69
+msgid "Already Have An Account?"
+msgstr ""
+
+#: templates/register.html:69
+msgid "Sign In"
+msgstr ""
+
+#: templates/reset_request.html:7 templates/reset_token.html:7
+msgid "Reset Password"
+msgstr ""
+
+#: templates/search.html:78 templates/searchresults.html:25
+msgid "Results"
+msgstr ""
+
+#: templates/searchresults.html:3
+msgid "Filter"
+msgstr ""
+
+#: templates/target.html:19
+msgid "Delete Target?"
+msgstr ""
+
+#: templates/target.html:23
+msgid "Delete target"
+msgstr ""
+
+#: users/routes.py:27
+msgid "Your account has been created! you are able to log in"
+msgstr ""
+
+#: users/routes.py:46
+msgid "Login Unsuccessful. Please check email and password"
+msgstr ""
+
+#: users/routes.py:69
+msgid "Your account has been updated!"
+msgstr ""
+
+#: users/routes.py:89
+msgid "An email has been sent with instructions to reset your password."
+msgstr ""
+
+#: users/routes.py:101
+msgid "That is an invalid or expired token"
+msgstr ""
+
