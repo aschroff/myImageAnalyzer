@@ -219,7 +219,7 @@ def new_item():
            # Image moderation
            unsafe_content_detection(item = item)  
            flash(gettext('Your new item has been created'), 'success') 
-           return redirect(url_for('main.home'))  
+           return redirect(url_for('items.item', item_id=item.id))   
     itemsall = Item.query.order_by(Item.date_posted.desc()).all()  
     form.analysis_keywords.data = True
     form.analysis_threshold.data = 90
