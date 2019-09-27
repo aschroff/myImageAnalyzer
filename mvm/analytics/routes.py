@@ -204,20 +204,21 @@ def search():
     else:
         search_query = str('*')
     return redirect(url_for('analytics.results', search_query=search_query, search_keywords=True, search_attributes = False,
-                            search_celebs = False, search_text = False, search_age = '', search_targets = '',searchtexthidden=form.searchtext.data))
+                            search_celebs = False, search_text = False, search_age = '', search_targets = '',searchtexthidden=form.searchtext.data, myitemsonly = False))
 
 @analytics.route("/filter/<search_query>", methods=['POST'])
 def filter(search_query):    
     formfilter = FilterItemForm()
-    choices = Target.query.filter_by(searcher = current_user)
-    formfilter.search_targets.query = choices   
+    if current_user.is_authenticated:
+        choices = Target.query.filter_by(searcher = current_user)
+        formfilter.search_targets.query = choices   
     if formfilter.search_targets.data:
         search_targets = formfilter.search_targets.data.id
     else:                  
         search_targets = ''
     return redirect(url_for('analytics.results', search_query=search_query, search_keywords=formfilter.search_keywords.data, search_attributes = formfilter.search_attributes.data,
                             search_celebs = formfilter.search_celebs.data, search_text = formfilter.search_text.data, search_age = formfilter.search_age.data,
-                            search_targets=search_targets, searchtexthidden = formfilter.searchtexthidden.data))
+                            search_targets=search_targets, searchtexthidden = formfilter.searchtexthidden.data, myitemsonly = formfilter.myitemsonly.data))
     
 
 @analytics.route("/results/<search_query>")
@@ -248,6 +249,8 @@ def results(search_query):
         itemscollect = itemscollect2
     if request.args.get('search_targets'):
         itemscollect = itemscollect.join(Person).join(Targetimage).join(Target).filter_by(id=request.args.get('search_targets'))
+    if request.args.get('myitemsonly') == 'True':
+       itemscollect = itemscollect.filter_by(owner=current_user) 
 
     items = itemscollect.distinct().paginate(page=page, per_page=8)
     texts={}  
@@ -267,6 +270,8 @@ def results(search_query):
         formfilter.search_celebs.data = request.args.get('search_celebs')
     if request.args.get('search_text') == 'True':        
         formfilter.search_text.data = request.args.get('search_text')
+    if request.args.get('myitemsonly') == 'True':        
+        formfilter.myitemsonly.data = request.args.get('myitemsonly')
     formfilter.search_age.data = request.args.get('search_age')
     formfilter.searchtexthidden.data = request.args.get('searchtexthidden')
     
@@ -276,9 +281,7 @@ def results(search_query):
         if request.args.get('search_targets'):
             select = Target.query.get(request.args.get('search_targets'))
             formfilter.search_targets.process_data(select)
-            #        formfilter.searchtexthidden.data = request.args.get('searchtexthidden')
-        print('Ja')
-    print(formfilter.search_targets)    
+   
     
     return render_template('searchresults.html', title='Search', legend=gettext('Item search'), searchform = formsearch, filterform = formfilter, items = items, itemsall=itemsall, texts=texts, search_query = search_query)
      

@@ -31,7 +31,7 @@ class ItemsTests(BaseTestCase):
             )
             self.assertEqual(response.status_code, 200)
             self.assertIn(b'Your new item has been created', response.data)
-            self.assertIn(b'maxmustermann1', response.data)
+            self.assertIn(b'admin', response.data)
             self.assertIn(b'Ed Sheeran', response.data)
             self.assertIn(b'description in itemname', response.data)
             self.assertIn(b'Testtext noch la', response.data)

@@ -31,4 +31,5 @@ class FilterItemForm(FlaskForm):
     search_age = IntegerField(lazy_gettext('filter via age of persons'), validators=[NumberRange(min=0, max=999)])
     #Targets
     search_targets = QuerySelectField(get_label='name', label='Target to search', allow_blank=True, blank_text=lazy_gettext('all targets'))
+    myitemsonly = BooleanField(lazy_gettext('my items only'))
     submit = SubmitField(lazy_gettext('Search')) 

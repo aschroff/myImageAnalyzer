@@ -15,10 +15,11 @@
         <table>    
             <tr>
                  {% if current_user.is_authenticated %}
-                     <td>{{ filterform.search_targets.label(class="form-control-label") }} {{ filterform.search_targets(class="form-control-input", onchange="submit()") }}</td>        
+                     <td>{{ filterform.search_targets.label(class="form-control-label") }} {{ filterform.search_targets(class="form-control-input", onchange="submit()") }}</td>    
+                     <td>{{ filterform.myitemsonly.label(class="form-control-label  font-weight-bold") }} {{ filterform.myitemsonly(class="form-control-button", onchange="submit()") }}</td>    
                  {% endif %}   
             </tr>             
-        </table>
+        </table>            
       </div>
     </div>
 </form>
@@ -62,14 +63,15 @@
     {% set search_attributes = filterform.search_attributes.data %}
     {% set search_celebs = filterform.search_celebs.data %}
     {% set search_text = filterform.search_text.data %}
+    {% set myitemsonly = filterform.myitemsonly.data %}
     {% set search_age = filterform.search_age.data %}
     {% set search_targets = filterform.search_targets.data %}
     {% for page_num in items.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
         {% if page_num %}
             {% if items.page == page_num %}      
-                <a class="btn btn-info mb-4" href="{{ url_for('analytics.results', search_query = search_query, search_keywords=search_keywords, search_attributes = search_attributes, search_celebs = search_celebs, search_text = search_text, search_age=search_age, search_targets= search_targets, page = page_num)}}">{{ page_num }}</a>
+                <a class="btn btn-info mb-4" href="{{ url_for('analytics.results', search_query = search_query, search_keywords=search_keywords, search_attributes = search_attributes, search_celebs = search_celebs, search_text = search_text, search_age=search_age, search_targets= search_targets, myitemsonly = myitemsonly, page = page_num)}}">{{ page_num }}</a>
             {% else %}
-                <a class="btn btn-outline-info mb-4" href="{{ url_for('analytics.results', search_query = search_query, search_keywords=search_keywords, search_attributes = search_attributes, search_celebs = search_celebs, search_text = search_text, search_age=search_age, search_targets=search_targets, page = page_num)}}">{{ page_num }}</a>
+                <a class="btn btn-outline-info mb-4" href="{{ url_for('analytics.results', search_query = search_query, search_keywords=search_keywords, search_attributes = search_attributes, search_celebs = search_celebs, search_text = search_text, search_age=search_age, myitemsonly = myitemsonly, search_targets=search_targets, page = page_num)}}">{{ page_num }}</a>
             {% endif %}
         {% else %}
         ...
