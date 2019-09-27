@@ -12,6 +12,7 @@ from mvm.analytics.forms import SearchItemForm
 from mvm.main.routes import create_texts
 import time
 from flask import stream_with_context
+from botocore.exceptions import ParamValidationError, ClientError
 
 
 steps = 10
@@ -34,7 +35,7 @@ def unsafe_content_detection(item):
 
 def object_and_scene_detection(item):
        if item.analysis_keywords:
-           imgbytes = get_image_from_file(item.item_file)
+           imgbytes = get_image_from_file(item.item_file)              
            rekres = rekognition.detect_labels(Image={'Bytes': imgbytes}, MinConfidence=item.analysis_threshold)
            for label in rekres['Labels']:
                    itemkeywordstring = str(label['Name'])
@@ -197,29 +198,38 @@ def new_item():
     form = CreateItemForm()
     if form.validate_on_submit():  
         if form.item_file.data:
-           itemfile = save_item(form.item_file.data) 
-           thumbnailfile = save_thumbnail(form.item_file.data)            
-           item = Item(item_file = itemfile, itemname = form.itemname.data, thumbnail = thumbnailfile,
-                       owner = current_user,  analysis_keywords=form.analysis_keywords.data, 
-                       analysis_persons = form.analysis_persons.data, analysis_celebs = form.analysis_celebs.data,
-                       analysis_targets = form.analysis_targets.data, analysis_text = form.analysis_text.data, analysis_labels = form.analysis_labels.data,
-                       analysis_threshold = form.analysis_threshold.data)
-           db.session.add(item)
-           db.session.commit()
-           # Object and scene detection - Keywords
-           object_and_scene_detection(item = item)             
-           # Facial analysis - Persons
-           facial_analysis(item = item) 
-           # Celebrity recognition        
-           celebrity_recognition(item = item)  
-           # Face comparision
-           face_comparison(item=item)
-           # Test in item
-           text_detection(item=item)
-           # Image moderation
-           unsafe_content_detection(item = item)  
-           flash(gettext('Your new item has been created'), 'success') 
-           return redirect(url_for('items.item', item_id=item.id))   
+           try: 
+               itemfile = save_item(form.item_file.data) 
+               thumbnailfile = save_thumbnail(form.item_file.data)     
+           except Exception:
+               flash(gettext('No item can be created for this file'), 'danger') 
+               return redirect(url_for('items.new_item')) 
+           else:    
+               item = Item(item_file = itemfile, itemname = form.itemname.data, thumbnail = thumbnailfile,
+                           owner = current_user,  analysis_keywords=form.analysis_keywords.data, 
+                           analysis_persons = form.analysis_persons.data, analysis_celebs = form.analysis_celebs.data,
+                           analysis_targets = form.analysis_targets.data, analysis_text = form.analysis_text.data, analysis_labels = form.analysis_labels.data,
+                           analysis_threshold = form.analysis_threshold.data)
+               db.session.add(item)
+               db.session.commit()
+               try:
+                   # Object and scene detection - Keywords
+                   object_and_scene_detection(item = item)     
+                   # Facial analysis - Persons
+                   facial_analysis(item = item) 
+                   # Celebrity recognition        
+                   celebrity_recognition(item = item)  
+                   # Face comparision
+                   face_comparison(item=item)
+                   # Test in item
+                   text_detection(item=item)
+                   # Image moderation
+                   unsafe_content_detection(item = item)                                       
+               except Exception:
+                   flash(gettext('The item cannot be analysed completly'), 'danger') 
+               else:    
+                   flash(gettext('Your new item has been created'), 'success') 
+               return redirect(url_for('items.item', item_id=item.id))   
     itemsall = Item.query.order_by(Item.date_posted.desc()).all()  
     form.analysis_keywords.data = True
     form.analysis_threshold.data = 90
@@ -236,34 +246,44 @@ def new_multipleitem():
         if pics:            
            current_user.multipleupload = len(pics)
            db.session.commit()
-           print('--------------------------------------------cumu'+ str(current_user.multipleupload))
+           founderror=False
            for pic in pics:
                filename = pic.filename
-               itemfile = save_item(pic) 
-               thumbnailfile = save_thumbnail(pic)                    
-               itemname = form.itemname.data + " - " + filename
-               if len(itemname)>35:
-                   itemname=itemname[0:32] + "..."
-               item = Item(item_file = itemfile, itemname = itemname, thumbnail = thumbnailfile,
-                           owner = current_user,  analysis_keywords=form.analysis_keywords.data, 
-                           analysis_persons = form.analysis_persons.data, analysis_celebs = form.analysis_celebs.data,
-                           analysis_targets = form.analysis_targets.data, analysis_text = form.analysis_text.data, analysis_labels = form.analysis_labels.data,
-                           analysis_threshold = form.analysis_threshold.data)
-               db.session.add(item)
-               db.session.commit()           
-               # Object and scene detection - Keywords
-               object_and_scene_detection(item = item)             
-               # Facial analysis - Persons
-               facial_analysis(item = item) 
-               # Celebrity recognition        
-               celebrity_recognition(item = item)  
-               # Face comparision
-               face_comparison(item=item)
-               # Test in item
-               text_detection(item=item)
-               # Image moderation
-               unsafe_content_detection(item = item)  
-           flash(gettext('Your new items have been created'), 'success') 
+               try:
+                   itemfile = save_item(pic) 
+                   thumbnailfile = save_thumbnail(pic)                    
+               except Exception:
+                   founderror = True 
+               else: 
+                   itemname = form.itemname.data + " - " + filename
+                   if len(itemname)>35:
+                       itemname=itemname[0:32] + "..."
+                   item = Item(item_file = itemfile, itemname = itemname, thumbnail = thumbnailfile,
+                               owner = current_user,  analysis_keywords=form.analysis_keywords.data, 
+                               analysis_persons = form.analysis_persons.data, analysis_celebs = form.analysis_celebs.data,
+                               analysis_targets = form.analysis_targets.data, analysis_text = form.analysis_text.data, analysis_labels = form.analysis_labels.data,
+                               analysis_threshold = form.analysis_threshold.data)
+                   db.session.add(item)
+                   db.session.commit()   
+                   try:
+                       # Object and scene detection - Keywords
+                       object_and_scene_detection(item = item)             
+                       # Facial analysis - Persons
+                       facial_analysis(item = item) 
+                       # Celebrity recognition        
+                       celebrity_recognition(item = item)  
+                       # Face comparision
+                       face_comparison(item=item)
+                       # Test in item
+                       text_detection(item=item)
+                       # Image moderation
+                       unsafe_content_detection(item = item)  
+                   except Exception:
+                       founderror = True
+           if founderror:        
+               flash(gettext('The new items could not be created and analysed completly'), 'danger')                
+           else:        
+               flash(gettext('Your new items have been created'), 'success') 
            return redirect(url_for('main.home'))  
     itemsall = Item.query.order_by(Item.date_posted.desc()).all()  
     form.analysis_keywords.data = True
@@ -294,8 +314,12 @@ def update_item(item_id):
     form=CreateItemForm()
     if form.validate_on_submit():
         if form.item_file.data:
-           item.item_file = save_item(form.item_file.data) 
-           item.thumbnail = save_thumbnail(form.item_file.data)         
+            try:
+                item.item_file = save_item(form.item_file.data) 
+                item.thumbnail = save_thumbnail(form.item_file.data)         
+            except Exception:
+               flash(gettext('The item can be updated for this file'), 'danger') 
+               return redirect(url_for('items.update_item', item_id=item.id))     
         item.itemname = form.itemname.data           
         item.analysis_keywords = form.analysis_keywords.data
         item.analysis_persons = form.analysis_persons.data
@@ -307,19 +331,23 @@ def update_item(item_id):
         db.session.query(ItemKeyword).filter(ItemKeyword.item_id == item_id).delete()
         db.session.query(Person).filter(Person.item_id == item_id).delete()
         db.session.commit()
-        # Object and scene detection - Keywords
-        object_and_scene_detection(item = item)             
-        # Facial analysis - Persons
-        facial_analysis(item = item) 
-        # Celebrity recognition        
-        celebrity_recognition(item = item)  
-        # Face comparision
-        face_comparison(item=item)
-        # Test in item
-        text_detection(item=item)
-        # Image moderation
-        unsafe_content_detection(item = item) 
-        flash(gettext('Your item has been updated'), 'success')
+        try:
+            # Object and scene detection - Keywords
+            object_and_scene_detection(item = item)             
+            # Facial analysis - Persons
+            facial_analysis(item = item) 
+            # Celebrity recognition        
+            celebrity_recognition(item = item)  
+            # Face comparision
+            face_comparison(item=item)
+            # Test in item
+            text_detection(item=item)
+            # Image moderation
+            unsafe_content_detection(item = item) 
+        except Exception as e:
+            flash(gettext('The item cannot be analysed completly'), 'danger') 
+        else:                
+            flash(gettext('Your item has been updated'), 'success')
         return redirect(url_for('items.item', item_id=item.id))   
     elif request.method == 'GET':
         form.itemname.data = item.itemname

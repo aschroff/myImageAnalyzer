@@ -21,7 +21,7 @@ def save_item(form_picture):
     _, f_ext = os.path.splitext(form_picture.filename)
     picturefilename = random_hex + f_ext
     picturepath = os.path.join(current_app.root_path, 'static/images/items', picturefilename)
-    i = Image.open(form_picture)
+    i = Image.open(form_picture)    
     i.save(picturepath)
     return picturefilename
 

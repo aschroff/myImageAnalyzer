@@ -8,7 +8,7 @@ from mvm.models import Target
 
 class ItemsTests(BaseTestCase):
 
-    # Ensure a logged in user can add a new post
+    # Ensure a logged in user can create a new item
     def test_user_can_create_item(self):
         with self.client:
             self.client.post(
@@ -38,6 +38,32 @@ class ItemsTests(BaseTestCase):
             self.assertIn(b'Face', response.data)
             self.assertIn(b'Male', response.data)
             
+    # Ensure a logged in user cannot add a new item for a corrupt file
+    def test_user_cannot_create_corrupt_item(self):
+        with self.client:
+            self.client.post(
+                '/login',
+                data=dict(email="ad@min.com", password="admin"),
+                follow_redirects=True
+            )
+            your_file = open("./tests/Test data/corrupt.jpg", "rb") 
+            response = self.client.post(
+                '/item/new',
+                data=dict(item_file=your_file, itemname="description in itemname", 
+                          analysis_keywords = True,
+                          analysis_persons = True,
+                          analysis_celebs = True,
+                          analysis_targets = True,
+                          analysis_text = True,
+                          analysis_labels = True,
+                          analysis_threshold = 90, ),
+                follow_redirects=True
+            )
+            self.assertEqual(response.status_code, 200)
+            self.assertIn(b'No item can be created for this file', response.data)
+
+
+        
       # Ensure user can register
     def test_user_item_full(self):
         with self.client:
