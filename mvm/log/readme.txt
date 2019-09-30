@@ -1,0 +1,1 @@
+Placeholder for git to create log folder

@@ -1,4 +1,4 @@
-from flask import Blueprint
+from flask import Blueprint, current_app
 from flask import render_template, url_for, flash, redirect, request
 from flask_login import login_user, current_user, logout_user, login_required
 from mvm import db, bcrypt
@@ -24,6 +24,7 @@ def register():
         user = User(username=form.username.data, email=form.email.data, password=hashedpassword)
         db.session.add(user)
         db.session.commit()
+        current_app.logger.info('New user registered {} {}'.format(user.username, user.email))  
         flash(gettext('Your account has been created! you are able to log in'), 'success')
         return redirect(url_for('users.login'))
     itemsall = Item.query.order_by(Item.date_posted.desc()).all()
@@ -42,7 +43,8 @@ def login():
             login_user(user, remember=form.remember.data)
             next_page = request.args.get('next')
             return redirect(next_page) if next_page else redirect(url_for('main.home'))
-        else:       
+        else:     
+            current_app.logger.warning('Unsuccessful login attempt {} {}'.format(user.username, user.email))  
             flash(gettext('Login Unsuccessful. Please check email and password'), 'danger')
     itemsall = Item.query.order_by(Item.date_posted.desc()).all()
     searchform = SearchItemForm()    

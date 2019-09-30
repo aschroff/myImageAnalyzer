@@ -1,4 +1,6 @@
 import os
+import logging
+
 
 if 'RDS_HOSTNAME' in os.environ:
   DATABASE = {
@@ -9,8 +11,14 @@ if 'RDS_HOSTNAME' in os.environ:
     'PORT': os.environ['RDS_PORT'],
   }
   databaseURI = 'mysql://%(USER)s:%(PASSWORD)s@%(HOST)s:%(PORT)s/%(NAME)s' % DATABASE
+  logfile = '/opt/python/log/mvm.log'
+  errorfile = '/opt/python/log/mvmerror.log'
+  LOG_LEVEL = logging.WARNING
 else:
   databaseURI = 'mysql://root:Welcome1@localhost/mvm'
+  logfile = './mvm/log/mvm.log'
+  errorfile = './mvm/log/mvmerror.log'
+  LOG_LEVEL = logging.INFO
 
 #databaseURI = 'mysql://dbadmin:Welcome1@aa185kmyt8wve44.cu76mq9u5srd.eu-central-1.rds.amazonaws.com/mvm'
 
@@ -24,6 +32,9 @@ class BaseConfig(object):
     MAIL_USE_SSL = True
     MAIL_USERNAME = 'support@schroffs.de'
     MAIL_PASSWORD = 'KSCole1894##'
+    LOG_FILE = logfile
+    ERROR_FILE = errorfile    
+    LOG_FORMAT = '%(asctime)s:%(name)s:%(message)s'
     BABEL_DEFAULT_LOCALE = 'en'
     BABEL_DEFAULT_TIMEZONE = 'UTC'
     LANGUAGES = {
@@ -40,10 +51,12 @@ class TestConfig(BaseConfig):
 
 class DevelopmentConfig(BaseConfig):
     DEBUG = True
+    LOG_LEVEL = logging.DEBUG
 
 
 class ProductionConfig(BaseConfig):
     DEBUG = False
+    LOG_LEVEL = logging.ERROR
 
 
     

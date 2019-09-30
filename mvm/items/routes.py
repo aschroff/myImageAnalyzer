@@ -22,6 +22,8 @@ def unsafe_content_detection(item):
        if item.analysis_labels:
            imgbytes = get_image_from_file(item.item_file)
            rekres = rekognition.detect_moderation_labels(Image={'Bytes': imgbytes}, MinConfidence=item.analysis_threshold)
+           if rekres['ModerationLabels']:
+              current_app.logger.warning('Unsafe content in file {} of {}: {}'.format(item.itemname, current_user.username, rekres['ModerationLabels']))              
            for label in rekres['ModerationLabels']:
                    if len(label['ParentName']) > 0:
                        labeltext = label['ParentName'] + " - " + label['Name']     
@@ -30,7 +32,7 @@ def unsafe_content_detection(item):
                            keyword = Keyword(keywordtextname = labeltext, label=True)
                            db.session.add(keyword)
                        itemkeyword = ItemKeyword(reference = keyword, itemin = item)
-                       db.session.add(itemkeyword)
+                       db.session.add(itemkeyword)                       
            db.session.commit()
 
 def object_and_scene_detection(item):
@@ -76,13 +78,13 @@ def facial_analysis(item):
                                         personattribute =  PersonAttribute(referenceperson = person, referenceattribute = attribute)  
                                         db.session.add(personattribute)                                       
                            elif attributename == 'Landmarks':                                   
-                              i = 1
+                              pass
                            elif attributename == 'Pose':    
-                               i = 1                               
+                               pass                               
                            elif attributename == 'Quality':     
-                              i = 1                               
+                              pass                               
                            elif attributename == 'Confidence':
-                               i = 1  
+                               pass  
                            elif attributename == 'Gender':
                                attributenamegender = personresult[attributename]['Value']
                                attribute = Attribute.query.filter_by(attributetextname = attributenamegender).first()      
@@ -201,7 +203,8 @@ def new_item():
            try: 
                itemfile = save_item(form.item_file.data) 
                thumbnailfile = save_thumbnail(form.item_file.data)     
-           except Exception:
+           except Exception as e:
+               current_app.logger.warning('File {} of {}: {}'.format(form.item_file.data, current_user.username, e))
                flash(gettext('No item can be created for this file'), 'danger') 
                return redirect(url_for('items.new_item')) 
            else:    
@@ -212,20 +215,39 @@ def new_item():
                            analysis_threshold = form.analysis_threshold.data)
                db.session.add(item)
                db.session.commit()
-               try:
+               try: 
+                   object_and_scene_detection_error = True
+                   facial_analysis_error = True
+                   celebrity_recognition_error = True
+                   face_comparison_error = True
+                   text_detection_error = True
+                   unsafe_content_detection_error = True
                    # Object and scene detection - Keywords
-                   object_and_scene_detection(item = item)     
+                   object_and_scene_detection(item = item)   
+                   object_and_scene_detection_error = False
                    # Facial analysis - Persons
                    facial_analysis(item = item) 
+                   facial_analysis_error = False
                    # Celebrity recognition        
                    celebrity_recognition(item = item)  
+                   celebrity_recognition_error = False
                    # Face comparision
                    face_comparison(item=item)
+                   face_comparison_error = False
                    # Test in item
                    text_detection(item=item)
+                   text_detection_error = False
                    # Image moderation
                    unsafe_content_detection(item = item)                                       
+                   unsafe_content_detection_error = False
                except Exception:
+                   current_app.logger.exception('Analysis item {} of {} incomplete: {} / {} / {} / {} / {} / {}'.format(form.item_file.data, current_user.username,     
+                                               object_and_scene_detection_error,
+                                               facial_analysis_error,
+                                               celebrity_recognition_error,
+                                               face_comparison_error,
+                                               text_detection_error,
+                                               unsafe_content_detection_error))
                    flash(gettext('The item cannot be analysed completly'), 'danger') 
                else:    
                    flash(gettext('Your new item has been created'), 'success') 
@@ -252,7 +274,8 @@ def new_multipleitem():
                try:
                    itemfile = save_item(pic) 
                    thumbnailfile = save_thumbnail(pic)                    
-               except Exception:
+               except Exception as e:
+                   current_app.logger.warning('File {} of {}: {}'.format(pic.filename, current_user.username, e))
                    founderror = True 
                else: 
                    itemname = form.itemname.data + " - " + filename
@@ -266,19 +289,38 @@ def new_multipleitem():
                    db.session.add(item)
                    db.session.commit()   
                    try:
+                       object_and_scene_detection_error = True
+                       facial_analysis_error = True
+                       celebrity_recognition_error = True
+                       face_comparison_error = True
+                       text_detection_error = True
+                       unsafe_content_detection_error = True
                        # Object and scene detection - Keywords
-                       object_and_scene_detection(item = item)             
+                       object_and_scene_detection(item = item)   
+                       object_and_scene_detection_error = False
                        # Facial analysis - Persons
                        facial_analysis(item = item) 
+                       facial_analysis_error = False
                        # Celebrity recognition        
                        celebrity_recognition(item = item)  
+                       celebrity_recognition_error = False
                        # Face comparision
                        face_comparison(item=item)
+                       face_comparison_error = False
                        # Test in item
                        text_detection(item=item)
+                       text_detection_error = False
                        # Image moderation
-                       unsafe_content_detection(item = item)  
+                       unsafe_content_detection(item = item)                                       
+                       unsafe_content_detection_error = False  
                    except Exception:
+                       current_app.logger.exception('Analysis item {} of {} incomplete: {} / {} / {} / {} / {} / {}'.format(pic.filename, current_user.username,     
+                           object_and_scene_detection_error,
+                           facial_analysis_error,
+                           celebrity_recognition_error,
+                           face_comparison_error,
+                           text_detection_error,
+                           unsafe_content_detection_error))
                        founderror = True
            if founderror:        
                flash(gettext('The new items could not be created and analysed completly'), 'danger')                
@@ -317,7 +359,8 @@ def update_item(item_id):
             try:
                 item.item_file = save_item(form.item_file.data) 
                 item.thumbnail = save_thumbnail(form.item_file.data)         
-            except Exception:
+            except Exception as e:
+               current_app.logger.warning('File {} of {}: {}'.format(form.item_file.data, current_user.username, e))
                flash(gettext('The item can be updated for this file'), 'danger') 
                return redirect(url_for('items.update_item', item_id=item.id))     
         item.itemname = form.itemname.data           
@@ -332,22 +375,41 @@ def update_item(item_id):
         db.session.query(Person).filter(Person.item_id == item_id).delete()
         db.session.commit()
         try:
-            # Object and scene detection - Keywords
-            object_and_scene_detection(item = item)             
-            # Facial analysis - Persons
-            facial_analysis(item = item) 
-            # Celebrity recognition        
-            celebrity_recognition(item = item)  
-            # Face comparision
-            face_comparison(item=item)
-            # Test in item
-            text_detection(item=item)
-            # Image moderation
-            unsafe_content_detection(item = item) 
-        except Exception as e:
-            flash(gettext('The item cannot be analysed completly'), 'danger') 
+           object_and_scene_detection_error = True
+           facial_analysis_error = True
+           celebrity_recognition_error = True
+           face_comparison_error = True
+           text_detection_error = True
+           unsafe_content_detection_error = True
+           # Object and scene detection - Keywords
+           object_and_scene_detection(item = item)   
+           object_and_scene_detection_error = False
+           # Facial analysis - Persons
+           facial_analysis(item = item) 
+           facial_analysis_error = False
+           # Celebrity recognition        
+           celebrity_recognition(item = item)  
+           celebrity_recognition_error = False
+           # Face comparision
+           face_comparison(item=item)
+           face_comparison_error = False
+           # Test in item
+           text_detection(item=item)
+           text_detection_error = False
+           # Image moderation
+           unsafe_content_detection(item = item)                                       
+           unsafe_content_detection_error = False
+        except Exception:
+           current_app.logger.exception('Analysis item {} of {} incomplete: {} / {} / {} / {} / {} / {}'.format(form.item_file.data, current_user.username,     
+                                       object_and_scene_detection_error,
+                                       facial_analysis_error,
+                                       celebrity_recognition_error,
+                                       face_comparison_error,
+                                       text_detection_error,
+                                       unsafe_content_detection_error))
+           flash(gettext('The item cannot be analysed completly'), 'danger') 
         else:                
-            flash(gettext('Your item has been updated'), 'success')
+           flash(gettext('Your item has been updated'), 'success')
         return redirect(url_for('items.item', item_id=item.id))   
     elif request.method == 'GET':
         form.itemname.data = item.itemname
@@ -412,12 +474,7 @@ def progress():
             with current_app.app_context():
                 itemcount = Item.query.filter_by(owner=current_user).count()                
                 
-            print('U----------itemcount' +str(itemcount))
-            print('U----------iteminital' +str(iteminital))
-            print('U----------itemstargetcount' +str(itemstargetcount))
-            percentage = round(100 * (itemcount-iteminital) / itemstargetcount)
-            print('U----------percentage' +str(percentage))    
-
+            percentage = round(100 * (itemcount-iteminital) / itemstargetcount) 
 
             sse_id = str(percentage)
             sse_data = str(percentage)
