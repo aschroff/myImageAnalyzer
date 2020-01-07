@@ -6,7 +6,7 @@ from wtforms.validators import DataRequired, Length, NumberRange
 from flask_babel import lazy_gettext
 
 class CreateItemForm(FlaskForm):
-    item_file = FileField(lazy_gettext('Item file'), validators=[DataRequired(),FileAllowed(['jpg', 'png'])])
+    item_file = FileField(lazy_gettext('Item file'), validators=[DataRequired(),FileAllowed(['jpg', 'jpeg', 'png'])])
     itemname = StringField(lazy_gettext('Name for item'), validators=[DataRequired(), Length(min=1, max=35)]) 
     analysis_keywords = BooleanField(lazy_gettext('analysis of keywords'))
     analysis_persons = BooleanField(lazy_gettext('analysis of persons'))

@@ -44,7 +44,7 @@ def login():
             next_page = request.args.get('next')
             return redirect(next_page) if next_page else redirect(url_for('main.home'))
         else:     
-            current_app.logger.warning('Unsuccessful login attempt {} {}'.format(user.username, user.email))  
+            current_app.logger.warning('Unsuccessful login attempt {}'.format(form.email.data))  
             flash(gettext('Login Unsuccessful. Please check email and password'), 'danger')
     itemsall = Item.query.order_by(Item.date_posted.desc()).all()
     searchform = SearchItemForm()    

@@ -2,8 +2,8 @@
 {% block content %}
     <article class="media content-section">
       <div class="media-body">
+      <h2 class="account-heading">{{ target.name}}</h2>
         <div class="article-metadata">
-          <a class="mr-2">{{ target.name}}</a><br>
           <a class="mr-2">{{ target.date_created}}</a><br>
           {% if target.searcher == current_user %}
               <div>
@@ -11,6 +11,30 @@
                   <button type="Button" class="btn btn-danger btn-sm m1" data-toggle="modal" data-target="#deleteModal">{{ _('Delete') }}</button>
               </div>
           {% endif %}
+        <legend class="border-bottom mb-4">{{ _('Images for target') }}</legend> 
+    <div class="row justify-content-center"> 
+        {% if target is defined %}
+            {% if target.targetimages is defined %}
+                {% if target.targetimages | count > 0 %}
+                     {% for targetimage in target.targetimages %}
+                         <a href="{{ url_for('analytics.targetimage', targetimage_id=targetimage.id) }}">
+                         <div class="card border-0 mb-0 mr-2" style="width: 10rem;"> 
+                             <img class="card-img-top" src="{{ url_for('static', filename='images/thumbnails/' + targetimage.thumbnail) }}">
+                             <div class="card-body px-0 pt-1">
+                                 <h6 class="card-title mb-0">{{ targetimage.name }}</h6>
+                                 <p class="card-subtitle mb-0 text-muted"><small>{{ target.date_created.strftime('%d-%m-%y') }} {{ target.targetimages | count }} {{ _('image(s)') }}</small></p>                    
+                             </div>
+                         </div>   
+                    {% endfor %}
+                {% else %}    
+                    <p class='text-muted'>{{ _('No images for this target defined') }}              
+                {% endif %} 
+            {% endif %} 
+              
+        {% endif %} 
+    </div>      
+          
+          
         </div>     
       </div>
 

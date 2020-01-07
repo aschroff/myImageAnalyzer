@@ -15,6 +15,7 @@ from flask import stream_with_context
 from botocore.exceptions import ParamValidationError, ClientError
 
 
+# number of steps in which detected objects are identified
 steps = 10
 items = Blueprint('items', __name__)
 
@@ -361,7 +362,7 @@ def update_item(item_id):
                 item.thumbnail = save_thumbnail(form.item_file.data)         
             except Exception as e:
                current_app.logger.warning('File {} of {}: {}'.format(form.item_file.data, current_user.username, e))
-               flash(gettext('The item can be updated for this file'), 'danger') 
+               flash(gettext('The item cannot be updated for this file'), 'danger') 
                return redirect(url_for('items.update_item', item_id=item.id))     
         item.itemname = form.itemname.data           
         item.analysis_keywords = form.analysis_keywords.data

@@ -54,13 +54,34 @@
             </div>
         </form>
         <legend class="border-bottom mb-4">{{ _('Targets') }}</legend>       
-        {% if current_user.targets | count > 0 %}
-            {% for target in current_user.targets %}
-                 <a class="list-group-item list-group-item-action" href="{{ url_for('analytics.target', target_id=target.id) }}">{{ target.name }} </a>
-            {% endfor %}
-        {% else %}    
-            <p class='text-muted'>{{ _('No targets defined') }}      
-        {% endif%} 
+        <div class="row justify-content-center">  
+            {% if current_user.targets | count > 0 %}
+                    {% for target in current_user.targets %}           
+                                <a href="{{ url_for('analytics.target', target_id=target.id) }}">
+                                <div class="card border-0 mb-0 mr-2" style="width: 10rem;"> 
+                                    {% if target.targetimages | count > 0 %} 
+                                        <img class="card-img-top" src="{{ url_for('static', filename='images/thumbnails/' + target.targetimages[0].thumbnail) }}">
+                                    {% else %}                                                
+                                        <img class="card-img-top" src="{{ url_for('static', filename='images/thumbnails/labelthumbnail.jpg') }}">
+                                        <div class="card-img-overlay px-2">
+                                          <p class="card-subtitle mb-0 text-danger"><small>{{ _('No images defined!') }}</small></p>
+                                        </div>
+
+                                    {% endif%}
+                                    <div class="card-body px-0 pt-1">
+                                            <h6 class="card-title mb-0">{{ target.name}}</h6>
+                                            <p class="card-subtitle mb-0 text-muted"><small>{{ target.date_created.strftime('%d-%m-%y') }} {{ target.targetimages | count }} {{ _('image(s)') }}</small></p>                    
+                                    </div>
+                                </div>
+                                </a>
+                    {% endfor %}           
+            {% else %}    
+                    <p class='text-muted'>{{ _('No targets defined') }}      
+            {% endif%}  
+        </div>			
+
+
+
             <a class="btn btn-secondary btn-sm mt-1 mb-1"  href="{{ url_for('analytics.new_target', user_id=current_user.id) }}">{{ _('New') }}</a>   
     </div>
 {% endblock content %}

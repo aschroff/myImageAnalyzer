@@ -7,6 +7,10 @@ from flask import current_app
 def save_thumbnail(form_picture):
     random_hex=secrets.token_hex(8)
     _, f_ext = os.path.splitext(form_picture.filename)
+    print(f_ext)
+    if f_ext == ".jpeg":
+        f_ext = ".jpg"
+        print(f_ext)
     picturefilename = random_hex + f_ext
     picturepath = os.path.join(current_app.root_path, 'static/images/thumbnails', picturefilename)
     outputsize = (250, 166)
@@ -19,6 +23,9 @@ def save_thumbnail(form_picture):
 def save_item(form_picture):
     random_hex=secrets.token_hex(8)
     _, f_ext = os.path.splitext(form_picture.filename)
+    if f_ext == ".jpeg":
+        f_ext = ".jpg"
+        print(f_ext)
     picturefilename = random_hex + f_ext
     picturepath = os.path.join(current_app.root_path, 'static/images/items', picturefilename)
     i = Image.open(form_picture)    

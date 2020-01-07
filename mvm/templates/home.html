@@ -1,10 +1,10 @@
 {% extends "layout.html" %}
 {% block content %}     
-    <div class="card-deck">   
+    <div class="row justify-content-center">   
     {% for item in items.items %}
 
                 <a href="{{ url_for('items.item', item_id=item.id) }}">
-                <div class="card border-0 mb-0" style="width: 10rem;">                                
+                <div class="card border-0 mb-0 mr-2" style="width: 10rem;">                                
 
                   {% if texts[item.id]["foundlabel"] %}
                       <img class="card-img-top" src="{{ url_for('static', filename='images/thumbnails/labelthumbnail.jpg') }}">

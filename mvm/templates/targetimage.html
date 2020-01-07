@@ -2,10 +2,10 @@
 {% block content %}
     <article class="media content-section">
       <div class="media-body">
+      <h2 class="account-heading">{{ targetimage.name}}</h2>
         <div class="article-metadata">
-          <a class="mr-2">{{ targetimage.name}}</a><br>
-          <a class="mr-2">{{ targetimage.age}}</a><br>
-          <a class="mr-2">{{ targetimage.date_created}}</a><br>
+          <a class="mr-2">{{ _('Age') }}: {{ targetimage.age}}</a><br>
+          <a class="mr-2">{{ _('Created') }}: {{ targetimage.date_created}}</a><br>
           {% if targetimage.imagefortarget.searcher == current_user %}
               <div>
                   <a class="btn btn-secondary btn-sm mt-1 mb-1"  href="{{ url_for('analytics.update_targetimage', targetimage_id=targetimage.id) }}">{{ _('Update') }}</a>

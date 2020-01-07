@@ -76,7 +76,7 @@
 
     <main role="main" class="container bg-white">
       <div class="row">
-        <div class="col-md-8">
+        <div class="col">
           {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
               {% for category, message in messages %}
@@ -107,6 +107,7 @@
             </p>
           </div>
         </div>
+        
       </div>
     </main>
 
