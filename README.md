@@ -1,1 +1,1 @@
-# myPictureAnalyzer
+# myImageAnalyzer
